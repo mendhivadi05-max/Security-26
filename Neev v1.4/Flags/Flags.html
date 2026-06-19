@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ClubDesk - Attendance Flags</title>
+
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Flags.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+
+            <h1>Attendance Flags</h1>
+
+            <button class="back-button"
+                    onclick="window.location.href='../Home/Home.html'">
+
+                ← Home
+
+            </button>
+
+        </div>
+
+
+        <div class="legend">
+
+            <div class="legend-item">
+
+                <span class="warning-icon">
+
+                    ⚠️
+
+                </span>
+
+                <span>
+
+                    Warning (2 Consecutive Absences)
+
+                </span>
+
+            </div>
+
+
+            <div class="legend-item">
+
+                <span class="flag-icon">
+
+                    🚩
+
+                </span>
+
+                <span>
+
+                    Flagged (3+ Consecutive Absences)
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div id="loadingMessage">
+
+            Loading attendance records...
+
+        </div>
+
+
+        <div id="noIssuesMessage"
+             style="display: none;">
+
+            🎉 Great! No warnings or flags found.
+
+        </div>
+
+
+        <div id="flagsContainer">
+
+        </div>
+
+    </div>
+
+
+    <script type="module"
+            src="Flags.js">
+
+    </script>
+
+</body>
+
+</html>
