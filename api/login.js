@@ -30,6 +30,18 @@ module.exports = async function handler(request, response) {
         });
     }
     catch (error) {
-        return response.status(401).json({ error: error.message || "Login failed." });
+        const expectedLoginError =
+            error.message === "Incorrect username or password." ||
+            error.message === "The human check was not accepted.";
+
+        if (!expectedLoginError) {
+            console.error("Login failed:", error);
+        }
+
+        return response.status(expectedLoginError ? 401 : 500).json({
+            error: expectedLoginError
+                ? error.message
+                : "Login service is unavailable. Please try again."
+        });
     }
 };

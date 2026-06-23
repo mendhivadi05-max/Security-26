@@ -1,6 +1,9 @@
-const FIREBASE_API_KEY =
-    process.env.FIREBASE_API_KEY ||
-    "AIzaSyDW2tNJCiXLEEUirjEzxHUaBQL6026KcGY";
+function firebaseApiKey() {
+    if (!process.env.FIREBASE_API_KEY) {
+        throw new Error("FIREBASE_API_KEY is not configured.");
+    }
+    return process.env.FIREBASE_API_KEY;
+}
 
 function parseCookies(request) {
     return Object.fromEntries(
@@ -55,7 +58,7 @@ async function verifyTurnstile(token, remoteIp) {
 
 async function firebasePasswordLogin(email, password) {
     const response = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey()}`,
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -83,7 +86,7 @@ async function verifyFirebaseToken(idToken) {
     }
 
     const response = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
+        `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseApiKey()}`,
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
