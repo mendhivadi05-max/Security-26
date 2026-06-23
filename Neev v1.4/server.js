@@ -39,5 +39,5 @@ http.createServer((request, response) => {
         response.end(data);
     });
 }).listen(port, () => {
-    console.log(`Club Desk is running at http://localhost:${port}`);
+    console.log(`Security'26 is running at http://localhost:${port}`);
 });

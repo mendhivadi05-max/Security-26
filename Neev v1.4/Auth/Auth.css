@@ -26,9 +26,17 @@ body{
     text-align:center;
 }
 
+.login-logo{
+    width:110px;
+    height:110px;
+    object-fit:cover;
+    border-radius:50%;
+    margin-bottom:14px;
+}
+
 .login-box h1{
     font-family:'Bangers', cursive;
-    font-size:4rem;
+    font-size:3.4rem;
     color:#ff4d00;
     letter-spacing:4px;
     text-shadow:3px 3px 0 black;

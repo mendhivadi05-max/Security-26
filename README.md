@@ -1,6 +1,6 @@
-# Club Desk
+# Security'26
 
-Static Club Desk frontend with Vercel serverless authentication endpoints and a
+Static Security'26 frontend with Vercel serverless authentication endpoints and a
 Firebase/Firestore data layer. It helps club owners and event hosts collaborate
 with team members and manage volunteers.
 
