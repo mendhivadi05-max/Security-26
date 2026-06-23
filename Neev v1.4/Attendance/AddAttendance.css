@@ -1,0 +1,233 @@
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial,sans-serif;
+    background:#f0f2f5;
+    color:#111827;
+}
+
+.attendance-header{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    padding:18px 30px;
+    background:#fff;
+    border-bottom:1px solid #d1d5db;
+}
+
+.logo{
+    width:96px;
+    height:96px;
+    object-fit:contain;
+    mix-blend-mode:multiply;
+}
+
+.session-details{
+    flex:1;
+}
+
+.session-details h1{
+    margin:0 0 14px;
+}
+
+.detail-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(130px,1fr));
+    gap:12px;
+}
+
+.detail-grid div{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:10px;
+}
+
+.detail-grid span{
+    display:block;
+    color:#6b7280;
+    font-size:.78em;
+    margin-bottom:4px;
+}
+
+.detail-grid strong{
+    display:block;
+    overflow-wrap:anywhere;
+}
+
+main{
+    padding:24px 30px 90px;
+}
+
+.attendance-table{
+    background:#fff;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.table-head,
+.member-row{
+    display:grid;
+    grid-template-columns:160px 1fr 190px;
+    align-items:center;
+    gap:16px;
+}
+
+.table-head{
+    background:#e5e7eb;
+    color:#374151;
+    font-weight:bold;
+    padding:14px 18px;
+}
+
+.member-row{
+    padding:14px 18px;
+    border-top:1px solid #e5e7eb;
+}
+
+.roll-number{
+    font-weight:bold;
+}
+
+.member-name{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:0;
+}
+
+.member-history{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+}
+
+.history-pill,
+.history-empty{
+    display:inline-flex;
+    align-items:center;
+    width:max-content;
+    max-width:100%;
+    border-radius:999px;
+    padding:4px 8px;
+    font-size:.78em;
+    line-height:1.2;
+}
+
+.history-pill.present{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.history-pill.absent{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.history-empty{
+    background:#f3f4f6;
+    color:#6b7280;
+}
+
+.status-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.attendance-toggle{
+    position:relative;
+    width:54px;
+    height:28px;
+}
+
+.attendance-toggle input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.toggle-track{
+    position:absolute;
+    cursor:pointer;
+    inset:0;
+    background:#dc2626;
+    border-radius:999px;
+    transition:.2s;
+}
+
+.toggle-track:before{
+    content:"";
+    position:absolute;
+    width:22px;
+    height:22px;
+    left:3px;
+    top:3px;
+    background:#fff;
+    border-radius:50%;
+    transition:.2s;
+}
+
+.attendance-toggle input:checked + .toggle-track{
+    background:#16a34a;
+}
+
+.attendance-toggle input:checked + .toggle-track:before{
+    transform:translateX(26px);
+}
+
+.status-label{
+    font-weight:bold;
+}
+
+#saveAttendance{
+    position:fixed;
+    right:30px;
+    bottom:24px;
+    padding:14px 22px;
+    font-size:16px;
+    background:#2563eb;
+    color:#fff;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(37,99,235,.25);
+}
+
+@media(max-width:760px){
+    .attendance-header{
+        align-items:flex-start;
+        padding:16px;
+    }
+
+    .logo{
+        width:72px;
+        height:72px;
+    }
+
+    .detail-grid{
+        grid-template-columns:1fr;
+    }
+
+    main{
+        padding:16px 12px 90px;
+    }
+
+    .table-head,
+    .member-row{
+        grid-template-columns:90px 1fr 130px;
+        gap:10px;
+        padding:12px;
+    }
+}
+
+/* Login-page visual system */
+.attendance-header{background:#fffdf8;border:5px solid #111;box-shadow:8px 8px 0 #111;margin:20px 30px}
+.detail-grid div{background:#fff;border:3px solid #111;border-radius:0}
+.attendance-table{background:#fffdf8;border:5px solid #111;border-radius:0;box-shadow:8px 8px 0 #111}
+.table-head,.member-row{grid-template-columns:140px 1fr 300px}
+.table-head{background:#ffe45c;color:#111}.member-row{border-top:3px solid #111}
+.status-cell{flex-wrap:wrap}.status-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.member-row.is-flagged{background:#fff0f0}
+#saveAttendance{background:#a0ff9f;color:#111}
+@media(max-width:760px){.attendance-header{margin:10px}.table-head,.member-row{grid-template-columns:75px 1fr}.table-head span:last-child{display:none}.status-cell{grid-column:1/-1;justify-content:flex-end}}

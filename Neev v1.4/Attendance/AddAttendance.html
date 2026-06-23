@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instant Session</title>
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="AddAttendance.css">
+</head>
+
+<body>
+    <header class="attendance-header">
+        <a href="../Home/Home.html" class="logo-link" aria-label="Back to dashboard">
+            <img src="../Home/Logo.jpg" alt="Logo" class="logo">
+        </a>
+
+        <div class="session-details">
+            <h1>Instant Session</h1>
+
+            <div class="detail-grid">
+                <div>
+                    <span>Hosted by</span>
+                    <strong id="hostedBy">Loading...</strong>
+                </div>
+
+                <div>
+                    <span>Venue</span>
+                    <strong id="venue">Loading...</strong>
+                </div>
+
+                <div>
+                    <span>Time</span>
+                    <strong id="sessionTime">Loading...</strong>
+                </div>
+
+                <div>
+                    <span>Description</span>
+                    <strong id="sessionNote">None</strong>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="attendance-table">
+            <div class="table-head">
+                <span>Roll No.</span>
+                <span>Name</span>
+                <span>Status & action</span>
+            </div>
+
+            <div id="membersContainer"></div>
+        </div>
+    </main>
+
+    <button id="saveAttendance">
+        Save Session
+    </button>
+
+    <script type="module" src="AddAttendance.js"></script>
+</body>
+
+</html>

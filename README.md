@@ -1,7 +1,8 @@
 # Club Desk
 
 Static Club Desk frontend with Vercel serverless authentication endpoints and a
-Firebase/Firestore data layer.
+Firebase/Firestore data layer. It helps club owners and event hosts collaborate
+with team members and manage volunteers.
 
 ## Deploy to Vercel
 

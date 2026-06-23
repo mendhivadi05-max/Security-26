@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Records</title>
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Database.css">
+</head>
+
+<body>
+    <main class="database-shell">
+        <section class="database-panel">
+            <p class="eyebrow">Database Records</p>
+            <h1>Choose what you want to open</h1>
+            <p class="panel-copy">
+                Select a records area to continue.
+            </p>
+            <button class="primary-btn" id="openChoices">
+                Open Database Records
+            </button>
+        </section>
+    </main>
+
+    <div class="modal-overlay is-visible" id="databaseChoiceModal">
+        <div class="choice-modal" role="dialog" aria-modal="true" aria-labelledby="choiceTitle">
+            <h2 id="choiceTitle">Database Records</h2>
+            <p>What would you like to do?</p>
+
+            <div class="choice-grid">
+                <a href="VolunteerRecords.html" class="choice-card">
+                    <span class="choice-number">1</span>
+                    <span>Volunteer Records</span>
+                </a>
+
+                <a href="BrowseStatistics.html" class="choice-card">
+                    <span class="choice-number">2</span>
+                    <span>Browse Statistics</span>
+                </a>
+
+                <a href="AddVolunteer.html" class="choice-card">
+                    <span class="choice-number">3</span>
+                    <span>Add New Volunteer</span>
+                </a>
+            </div>
+
+            <form class="insight-search" id="insightSearchForm">
+                <label for="insightSearch">Search insights</label>
+                <div class="insight-search-row">
+                    <input
+                        type="search"
+                        id="insightSearch"
+                        list="insightSuggestions"
+                        placeholder="Meeting, batch, gender, year...">
+                    <button class="primary-btn" type="submit">Search</button>
+                </div>
+                <datalist id="insightSuggestions">
+                    <option value="Most present meeting">
+                    <option value="Most absent meeting">
+                    <option value="Attendance by batch">
+                    <option value="Attendance by gender">
+                    <option value="Attendance by year">
+                </datalist>
+            </form>
+
+            <button class="secondary-btn" id="closeChoices">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="Database.js"></script>
+</body>
+
+</html>

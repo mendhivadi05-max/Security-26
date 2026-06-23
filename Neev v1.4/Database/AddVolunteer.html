@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Volunteer</title>
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Database.css">
+</head>
+
+<body>
+    <main class="page-shell">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">Database Records</p>
+                <h1>Add New Volunteer</h1>
+            </div>
+            <a class="secondary-link" href="../Home/Home.html">Back to Dashboard</a>
+        </header>
+
+        <form class="volunteer-form" id="volunteerForm">
+            <label>
+                Full Name
+                <input type="text" id="volunteerName" required placeholder="Volunteer name">
+            </label>
+
+            <div class="form-grid">
+                <label>
+                    Date of Birth
+                    <input type="date" id="volunteerDob" required>
+                </label>
+
+                <label>
+                    Gender
+                    <select id="volunteerGender" required>
+                        <option value="">Select gender</option>
+                        <option>Female</option>
+                        <option>Male</option>
+                        <option>Non-binary</option>
+                        <option>Prefer not to say</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="form-grid">
+                <label>
+                    Course
+                    <input type="text" id="volunteerCourse" required placeholder="Course">
+                </label>
+
+                <label>
+                    Batch
+                    <input type="text" id="volunteerBatch" required placeholder="Batch">
+                </label>
+            </div>
+
+            <label>
+                Volunteer Image
+                <input type="file" id="volunteerImage" accept="image/*">
+            </label>
+
+            <div class="image-preview" id="imagePreview">
+                No image selected
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-btn">Save Volunteer</button>
+                <button type="reset" class="secondary-btn">Clear</button>
+            </div>
+        </form>
+    </main>
+
+    <script type="module" src="AddVolunteer.js"></script>
+</body>
+
+</html>

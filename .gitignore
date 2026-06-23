@@ -5,3 +5,5 @@ firebase-debug.*.log
 Database/auth.json
 .env
 .env.local
+
+.vercel
