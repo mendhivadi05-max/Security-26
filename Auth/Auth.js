@@ -6,6 +6,7 @@ const turnstileContainer = document.getElementById("turnstile-widget");
 
 let turnstileWidgetId = null;
 let turnstileToken = "";
+let turnstileEnabled = true;
 
 function showError(message, success = false) {
     error.style.color = success ? "green" : "red";
@@ -34,7 +35,17 @@ async function renderTurnstile() {
     try {
         const response = await fetch("/api/auth-config", { cache: "no-store" });
         const config = await response.json();
-        if (!response.ok || !config.turnstileSiteKey) {
+        if (!response.ok) {
+            throw new Error("Turnstile is not configured.");
+        }
+
+        turnstileEnabled = config.turnstileEnabled !== false;
+        if (!turnstileEnabled) {
+            turnstileContainer.textContent = "Not required on localhost";
+            return;
+        }
+
+        if (!config.turnstileSiteKey) {
             throw new Error("Turnstile is not configured.");
         }
 
@@ -64,8 +75,16 @@ async function login() {
     const email = usernameToEmail(usernameInput.value);
     const password = passwordInput.value;
 
-    if (!usernameInput.value.trim() || !password || !turnstileToken) {
-        showError("Complete the username, password, and human check.");
+    if (
+        !usernameInput.value.trim() ||
+        !password ||
+        (turnstileEnabled && !turnstileToken)
+    ) {
+        showError(
+            turnstileEnabled
+                ? "Complete the username, password, and human check."
+                : "Complete the username and password."
+        );
         return;
     }
 
@@ -88,7 +107,7 @@ async function login() {
     catch (loginError) {
         passwordInput.value = "";
         turnstileToken = "";
-        if (turnstileWidgetId !== null) {
+        if (turnstileEnabled && turnstileWidgetId !== null) {
             window.turnstile.reset(turnstileWidgetId);
         }
         showError(loginError.message || "Login failed. Please try again.");

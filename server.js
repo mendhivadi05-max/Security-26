@@ -39,8 +39,7 @@ const {
 
 const root = __dirname;
 const port = Number(process.env.PORT) || 3000;
-const LOCAL_TURNSTILE_SITE_KEY = "1x00000000000000000000AA";
-const LOCAL_TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA";
+const isProduction = process.env.NODE_ENV === "production";
 
 const contentTypes = {
     ".html": "text/html; charset=utf-8",
@@ -85,9 +84,10 @@ function readJson(request) {
 async function handleApi(request, response, pathname) {
     if (pathname === "/api/auth-config" && request.method === "GET") {
         sendJson(response, 200, {
-            turnstileSiteKey:
-                process.env.TURNSTILE_SITE_KEY ||
-                LOCAL_TURNSTILE_SITE_KEY
+            turnstileEnabled: isProduction,
+            turnstileSiteKey: isProduction
+                ? process.env.TURNSTILE_SITE_KEY || ""
+                : ""
         });
         return;
     }
@@ -101,25 +101,20 @@ async function handleApi(request, response, pathname) {
 
     if (pathname === "/api/login") {
         const { email, password, turnstileToken } = body;
-        if (!email || !password || !turnstileToken) {
-            sendJson(response, 400, { error: "Complete all login fields." });
+        if (!email || !password || (isProduction && !turnstileToken)) {
+            sendJson(response, 400, { error: "Complete all required login fields." });
             return;
         }
 
-        const existingSecret = process.env.TURNSTILE_SECRET_KEY;
-        process.env.TURNSTILE_SECRET_KEY =
-            existingSecret || LOCAL_TURNSTILE_SECRET_KEY;
-        const turnstileAccepted = await verifyTurnstile(
-            turnstileToken,
-            request.socket.remoteAddress
-        );
-        if (!existingSecret) {
-            delete process.env.TURNSTILE_SECRET_KEY;
-        }
-
-        if (!turnstileAccepted) {
-            sendJson(response, 403, { error: "The human check was not accepted." });
-            return;
+        if (isProduction) {
+            const turnstileAccepted = await verifyTurnstile(
+                turnstileToken,
+                request.socket.remoteAddress
+            );
+            if (!turnstileAccepted) {
+                sendJson(response, 403, { error: "The human check was not accepted." });
+                return;
+            }
         }
 
         const firebaseLogin = await firebasePasswordLogin(email, password);
