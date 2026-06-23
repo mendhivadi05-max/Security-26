@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security'26 Login</title>
+    <link rel="stylesheet" href="Auth.css">
+</head>
+<body>
+    <div class="login-box">
+        <h1>CLUB DESK</h1>
+        <p class="subtitle">Access the Secret HQ</p>
+
+        <label for="username">Username or email</label>
+        <input type="text" id="username" autocomplete="username" placeholder="Enter Username">
+
+        <label for="password">Secret Code</label>
+        <input type="password" id="password" autocomplete="current-password" placeholder="Enter Password">
+
+        <label>Human Check</label>
+        <div id="turnstile-widget" class="turnstile-widget"></div>
+
+        <button type="button" id="submit-button">SUBMIT</button>
+        <p id="error"></p>
+    </div>
+
+    <script type="module" src="Auth.js"></script>
+    <script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback"
+        defer>
+    </script>
+</body>
+</html>

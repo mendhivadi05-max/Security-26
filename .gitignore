@@ -1,0 +1,7 @@
+functions/node_modules/
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+Database/auth.json
+.env
+.env.local

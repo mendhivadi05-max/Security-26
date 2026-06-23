@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Authentication data is server-only. Cloud Functions use the Admin SDK
+    // and are not restricted by these client rules.
+    match /authUsers/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /authChallenges/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /authSessions/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /authRateLimits/{document=**} {
+      allow read, write: if false;
+    }
+
+    // Preserve the existing app's current direct Firestore access.
+    // These collections should be migrated to authenticated server calls next.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

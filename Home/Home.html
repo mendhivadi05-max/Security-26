@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Dashboard</title>
+
+    <style>body { visibility: hidden; }</style>
+    <script type="module" src="../Auth/AuthGuard.js"></script>
+
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Home.css">
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.jpg" alt="Logo" class="logo">
+        </div>
+
+        <div class="header-center">
+            <h1>Dashboard</h1>
+        </div>
+
+        <div class="header-right">
+            <span class="mobile-title">Dashboard</span>
+            <span class="user-greeting" id="userNameDisplay">Welcome</span>
+            <button class="logout-btn" onclick="logout()">
+                Log Out
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+
+        <div class="left-panel">
+            <a href="#" class="log-box" id="addAttendanceTile">
+                Instant Session
+            </a>
+
+            <a href="../MeetingRecords/MeetingRecords.html" class="log-box">
+                Meeting Records
+            </a>
+
+            <a href="#" class="log-box" id="databaseRecordsTile">
+                Database Records
+            </a>
+
+            <a href="../Flags/Flags.html" class="log-box">
+                View Flags
+            </a>
+        </div>
+
+        <div class="right-side-wrapper">
+
+            <div class="right-panel">
+
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)">◀</button>
+
+                    <span id="month-year"></span>
+
+                    <button onclick="changeMonth(1)">▶</button>
+                </div>
+
+                <div
+                    class="calendar-grid"
+                    id="calendar-days">
+                </div>
+
+            </div>
+
+            <div class="legend-container">
+
+                <div
+                    class="legend-items"
+                    id="legendItems">
+                </div>
+
+                <button
+                    class="add-category-btn"
+                    onclick="openModal('categoryModal')">
+                    + New Color
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal-content">
+
+            <h3>Tasks</h3>
+
+            <ul id="taskList"></ul>
+
+            <select id="newTaskColor"></select>
+
+            <input
+                type="text"
+                id="newTaskInput"
+                placeholder="New task...">
+
+            <button onclick="addNewTask()">
+                Add
+            </button>
+
+            <button onclick="closeModal('taskModal')">
+                Close
+            </button>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal-content">
+
+            <h3>New Color</h3>
+
+            <input
+                type="text"
+                id="newCategoryName"
+                placeholder="Name (e.g. Work)">
+
+            <input
+                type="color"
+                id="newCategoryColor">
+
+            <button onclick="saveNewCategory()">
+                Save
+            </button>
+
+            <button onclick="closeModal('categoryModal')">
+                Close
+            </button>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="attendanceSetupModal">
+        <form class="modal-content attendance-modal" id="attendanceSetupForm">
+
+            <h3>Instant Session</h3>
+
+            <label for="attendanceTitle">Meeting name</label>
+            <input type="text" id="attendanceTitle" value="Instant Session" placeholder="Meeting name" required>
+
+            <label for="attendanceHost">Who is hosting the meeting?</label>
+            <input type="text" id="attendanceHost" placeholder="Host name" required>
+
+            <label for="attendanceVenue">Where is it being hosted?</label>
+            <input type="text" id="attendanceVenue" placeholder="Meeting location" required>
+
+            <label for="attendanceTime">What time is it being hosted?</label>
+            <input type="time" id="attendanceTime" required>
+
+            <label for="attendanceNote">Note / description</label>
+            <textarea id="attendanceNote" placeholder="Optional" rows="3"></textarea>
+
+            <div class="default-attendance-row">
+                <span>All students are by default</span>
+                <label class="attendance-switch">
+                    <input type="checkbox" id="defaultAttendanceStatus" checked>
+                    <span class="attendance-slider"></span>
+                </label>
+                <span id="defaultAttendanceLabel">Present</span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit">Continue</button>
+                <button type="button" id="cancelAttendanceSetup">Cancel</button>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="modal-overlay" id="databaseRecordsModal">
+        <div class="modal-content database-records-modal">
+            <h3>Database Records</h3>
+            <p class="database-modal-copy">What would you like to open?</p>
+
+            <div class="database-choice-list">
+                <a href="../Database/VolunteerRecords.html">
+                    <span>1</span>
+                    Volunteer Records
+                </a>
+                <a href="../Database/BrowseStatistics.html">
+                    <span>2</span>
+                    Browse Statistics
+                </a>
+                <a href="../Database/AddVolunteer.html">
+                    <span>3</span>
+                    Add New Volunteer
+                </a>
+            </div>
+
+            <form class="database-insight-search" id="dashboardInsightSearch">
+                <label for="dashboardInsightInput">Search insights</label>
+                <div>
+                    <input
+                        type="search"
+                        id="dashboardInsightInput"
+                        placeholder="Meeting, batch, gender, year...">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+
+            <div class="modal-actions">
+                <button type="button" id="closeDatabaseRecords">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="Home.js"></script>
+    <script type="module" src="HomeAttendance.js"></script>
+    <script type="module" src="HomeBirthdays.js"></script>
+
+</body>
+</html>

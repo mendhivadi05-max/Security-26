@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <style>body { visibility: hidden; }</style>
+    <script type="module" src="../Auth/AuthGuard.js"></script>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ClubDesk - Attendance Flags</title>
+
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Flags.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+
+            <h1>Attendance Flags</h1>
+
+            <button class="back-button"
+                    onclick="window.location.href='../Home/Home.html'">
+
+                ← Home
+
+            </button>
+
+        </div>
+
+
+        <div class="legend">
+
+            <div class="legend-item">
+
+                <span class="warning-icon">
+
+                    ⚠️
+
+                </span>
+
+                <span>
+
+                    Warning (2 Consecutive Absences)
+
+                </span>
+
+            </div>
+
+
+            <div class="legend-item">
+
+                <span class="flag-icon">
+
+                    🚩
+
+                </span>
+
+                <span>
+
+                    Flagged (3+ Consecutive Absences)
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <section class="reminder-panel" aria-labelledby="reminderTitle">
+            <div class="reminder-heading">
+                <div>
+                    <p class="section-kicker">WhatsApp reminders</p>
+                    <h2 id="reminderTitle">Select members to remind</h2>
+                    <p>
+                        Active members with “Send reminder” enabled will receive
+                        the approved <strong>club_meeting_reminder</strong> template.
+                    </p>
+                </div>
+
+                <span class="selection-count" id="selectionCount">0 selected</span>
+            </div>
+
+            <label class="meeting-time-field" for="meetingTime">
+                Meeting time
+                <input
+                    type="text"
+                    id="meetingTime"
+                    placeholder="Example: Sunday, 4:00 PM"
+                    maxlength="100">
+            </label>
+
+            <div class="member-reminder-list" id="memberReminderList">
+                Loading members...
+            </div>
+
+            <div class="reminder-actions">
+                <button type="button" class="save-selection-button" id="saveReminderSelection">
+                    Save selection
+                </button>
+
+                <button type="button" class="send-reminders-button" id="sendWhatsAppReminders">
+                    Send WhatsApp Reminders
+                </button>
+            </div>
+
+            <p class="reminder-result" id="reminderResult" role="status"></p>
+        </section>
+
+
+        <div id="loadingMessage">
+
+            Loading attendance records...
+
+        </div>
+
+
+        <div id="noIssuesMessage"
+             style="display: none;">
+
+            🎉 Great! No warnings or flags found.
+
+        </div>
+
+
+        <div id="flagsContainer">
+
+        </div>
+
+    </div>
+
+
+    <script type="module"
+            src="Flags.js">
+
+    </script>
+
+</body>
+
+</html>
