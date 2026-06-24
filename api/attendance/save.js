@@ -21,6 +21,23 @@ module.exports = async function handler(request, response) {
             return response.status(400).json({ error: "Session and attendance records are required." });
         }
 
+        const normalizedRecords = Object.fromEntries(
+            Object.entries(records)
+                .filter(([memberId]) => memberId)
+                .map(([memberId, record]) => [
+                    memberId,
+                    {
+                        name: String(record?.name || "Unnamed"),
+                        rollNumber: String(record?.rollNumber || ""),
+                        status: record?.status === "Absent" ? "Absent" : "Present"
+                    }
+                ])
+        );
+
+        if (!Object.keys(normalizedRecords).length) {
+            return response.status(400).json({ error: "At least one attendance record is required." });
+        }
+
         const db = firestore();
         const sessionSnap = await db.collection("sessions").doc(sessionId).get();
         if (!sessionSnap.exists) {
@@ -35,11 +52,11 @@ module.exports = async function handler(request, response) {
         await attendanceRef.set({
             savedAt: Date.now(),
             savedAtServer: FieldValue.serverTimestamp(),
-            records
-        });
+            records: normalizedRecords
+        }, { merge: true });
 
         const absentMemberIds = isFirstSave
-            ? Object.entries(records)
+            ? Object.entries(normalizedRecords)
             .filter(([, record]) => record?.status === "Absent")
             .map(([memberId]) => memberId)
             : [];

@@ -134,7 +134,7 @@ for (let index = 0; index < 10; index += 1) {
 
   await put("sessions", sessionId, {
     title: { stringValue: `Class ${index + 1}` },
-    hostedBy: { stringValue: "Neev" },
+    hostedBy: { stringValue: "ClubDesk" },
     venue: { stringValue: "Classroom" },
     time: { stringValue: "10:00" },
     note: { stringValue: "WhatsApp bot attendance test class" },

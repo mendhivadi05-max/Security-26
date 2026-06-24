@@ -8,7 +8,9 @@ function loadLocalEnvironment(filePath) {
         return;
     }
 
-    for (const line of fs.readFileSync(filePath, "utf8").split(/\r?\n/)) {
+    const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+        let line = lines[index];
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith("#")) {
             continue;
@@ -21,12 +23,17 @@ function loadLocalEnvironment(filePath) {
 
         const name = trimmed.slice(0, separator).trim();
         let value = trimmed.slice(separator + 1).trim();
-        if (
-            (value.startsWith('"') && value.endsWith('"')) ||
-            (value.startsWith("'") && value.endsWith("'"))
-        ) {
+        const quote = value[0];
+        if ((quote === '"' || quote === "'") && !value.endsWith(quote)) {
+            while (index + 1 < lines.length && !value.endsWith(quote)) {
+                index += 1;
+                value += `\n${lines[index]}`;
+            }
+        }
+        if ((quote === '"' || quote === "'") && value.endsWith(quote)) {
             value = value.slice(1, -1);
         }
+        value = value.replace(/\\n/g, "\n");
         if (name && process.env[name] === undefined) {
             process.env[name] = value;
         }
@@ -311,5 +318,5 @@ http.createServer(async (request, response) => {
         response.end(data);
     });
 }).listen(port, () => {
-    console.log(`Security'26 is running at http://localhost:${port}`);
+    console.log(`ClubDesk is running at http://localhost:${port}`);
 });

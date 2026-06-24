@@ -1,6 +1,6 @@
-# Security'26
+# ClubDesk
 
-Static Security'26 frontend with Vercel serverless authentication endpoints,
+Static ClubDesk frontend with Vercel serverless authentication endpoints,
 Firebase/Firestore, and backend WhatsApp Cloud API automation. It helps club
 owners and event hosts collaborate with team members, manage volunteers, record
 attendance, and send approved WhatsApp templates without exposing Meta secrets
