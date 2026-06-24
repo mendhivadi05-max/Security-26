@@ -52,17 +52,39 @@ module.exports = async function handler(request, response) {
             }
         }
 
-        const whatsapp = await sendBatch({
-            members: absentMembers,
-            templateKey: "absentNotice",
-            requestId: requestId(),
-            variableBuilder: member => ({
-                name: memberName(member),
-                meeting_name: session.title || "the club",
-                date: session.date || new Date().toISOString().split("T")[0],
-                time: session.time || "the scheduled time"
-            })
-        });
+        let whatsapp = {
+            total: absentMembers.length,
+            sent: 0,
+            failed: 0,
+            results: []
+        };
+
+        try {
+            whatsapp = await sendBatch({
+                members: absentMembers,
+                templateKey: "absentNotice",
+                requestId: requestId(),
+                variableBuilder: member => ({
+                    name: memberName(member),
+                    meeting_name: session.title || "the club",
+                    date: session.date || new Date().toISOString().split("T")[0],
+                    time: session.time || "the scheduled time"
+                })
+            });
+        }
+        catch (whatsappError) {
+            console.error("Absent WhatsApp notices failed after attendance save:", whatsappError);
+            whatsapp = {
+                total: absentMembers.length,
+                sent: 0,
+                failed: absentMembers.length,
+                results: absentMembers.map(member => ({
+                    ok: false,
+                    memberId: member.id,
+                    error: whatsappError.message || "WhatsApp send failed."
+                }))
+            };
+        }
 
         await logAction({
             user,

@@ -34,9 +34,8 @@ function isActiveMember(member) {
 }
 
 function templatePayload(to, templateKey, variables) {
-    const orderedValues = Object.entries(variables).map(([name, value]) => ({
+    const orderedValues = Object.values(variables).map(value => ({
         type: "text",
-        parameter_name: name,
         text: String(value ?? "")
     }));
 
