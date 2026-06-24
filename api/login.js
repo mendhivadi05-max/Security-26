@@ -1,5 +1,6 @@
 const {
     firebasePasswordLogin,
+    normalizeLoginEmail,
     sessionCookie,
     verifyTurnstile
 } = require("./_auth");
@@ -10,8 +11,9 @@ module.exports = async function handler(request, response) {
     }
 
     try {
-        const { email, password, turnstileToken } = request.body || {};
-        if (!email || !password || !turnstileToken) {
+        const { email, identifier, password, turnstileToken } = request.body || {};
+        const loginEmail = normalizeLoginEmail(identifier || email);
+        if (!loginEmail || !password || !turnstileToken) {
             return response.status(400).json({ error: "Complete all login fields." });
         }
 
@@ -20,13 +22,13 @@ module.exports = async function handler(request, response) {
             return response.status(403).json({ error: "The human check was not accepted." });
         }
 
-        const firebaseLogin = await firebasePasswordLogin(email, password);
+        const firebaseLogin = await firebasePasswordLogin(loginEmail, password);
         response.setHeader(
             "Set-Cookie",
             sessionCookie(firebaseLogin.idToken, Number(firebaseLogin.expiresIn) || 3600)
         );
         return response.status(200).json({
-            username: firebaseLogin.displayName || email.split("@")[0]
+            username: firebaseLogin.displayName || loginEmail.split("@")[0]
         });
     }
     catch (error) {

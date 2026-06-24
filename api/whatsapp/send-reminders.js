@@ -1,6 +1,6 @@
 const { jsonBody, rateLimit, requestId, requireAdmin, sendError } = require("../_apiUtils");
 const { logAction } = require("../_actionLog");
-const { firestore, admin } = require("../_firebaseAdmin");
+const { firestore, FieldValue } = require("../_firebaseAdmin");
 const { fetchActiveMembers, fetchMembersByIds, memberName, sendBatch } = require("../_whatsappService");
 
 module.exports = async function handler(request, response) {
@@ -45,7 +45,7 @@ module.exports = async function handler(request, response) {
 
             return db.collection("members").doc(sendResult.memberId).set({
                 lastReminderSentAt: sendResult.ok
-                    ? admin.firestore.FieldValue.serverTimestamp()
+                    ? FieldValue.serverTimestamp()
                     : null,
                 reminderStatus: sendResult.ok ? "sent" : "failed",
                 reminderError: sendResult.ok ? "" : sendResult.error || "Send failed"

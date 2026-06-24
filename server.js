@@ -37,6 +37,7 @@ loadLocalEnvironment(path.join(__dirname, ".env.local"));
 
 const {
     firebasePasswordLogin,
+    normalizeLoginEmail,
     parseCookies,
     sessionCookie,
     verifyFirebaseToken,
@@ -64,6 +65,25 @@ function sendJson(response, status, body) {
     });
     response.end(JSON.stringify(body));
 }
+
+const securityHeaders = {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data:",
+        "connect-src 'self' https://identitytoolkit.googleapis.com https://challenges.cloudflare.com",
+        "frame-src https://challenges.cloudflare.com",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'"
+    ].join("; ")
+};
 
 function readJson(request) {
     return new Promise((resolve, reject) => {
@@ -168,8 +188,9 @@ async function handleApi(request, response, pathname) {
     const body = await readJson(request);
 
     if (pathname === "/api/login") {
-        const { email, password, turnstileToken } = body;
-        if (!email || !password || (isProduction && !turnstileToken)) {
+        const { email, identifier, password, turnstileToken } = body;
+        const loginEmail = normalizeLoginEmail(identifier || email);
+        if (!loginEmail || !password || (isProduction && !turnstileToken)) {
             sendJson(response, 400, { error: "Complete all required login fields." });
             return;
         }
@@ -185,7 +206,7 @@ async function handleApi(request, response, pathname) {
             }
         }
 
-        const firebaseLogin = await firebasePasswordLogin(email, password);
+        const firebaseLogin = await firebasePasswordLogin(loginEmail, password);
         response.setHeader(
             "Set-Cookie",
             sessionCookie(
@@ -194,7 +215,7 @@ async function handleApi(request, response, pathname) {
             )
         );
         sendJson(response, 200, {
-            username: firebaseLogin.displayName || email.split("@")[0]
+            username: firebaseLogin.displayName || loginEmail.split("@")[0]
         });
         return;
     }
@@ -241,7 +262,14 @@ http.createServer(async (request, response) => {
         return;
     }
 
-    const publicPages = new Set(["/index.html", "/Auth/Auth.html"]);
+    const publicPages = new Set([
+        "/index.html",
+        "/Auth/Auth.html",
+        "/Legal/Privacy.html",
+        "/Legal/Terms.html",
+        "/Legal/Cookies.html",
+        "/Legal/AcceptableUse.html"
+    ]);
     if (
         path.extname(route).toLowerCase() === ".html" &&
         !publicPages.has(route) &&
@@ -271,6 +299,7 @@ http.createServer(async (request, response) => {
         }
 
         response.writeHead(200, {
+            ...securityHeaders,
             "Content-Type": contentTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream"
         });
         response.end(data);

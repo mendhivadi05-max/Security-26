@@ -13,9 +13,8 @@ function showError(message, success = false) {
     error.textContent = message;
 }
 
-function usernameToEmail(value) {
-    const username = value.trim().toLowerCase();
-    return username.includes("@") ? username : `${username}@clubdesk.local`;
+function normalizeIdentifier(value) {
+    return value.trim().toLowerCase();
 }
 
 async function api(path, data = {}) {
@@ -72,11 +71,11 @@ async function renderTurnstile() {
 }
 
 async function login() {
-    const email = usernameToEmail(usernameInput.value);
+    const identifier = normalizeIdentifier(usernameInput.value);
     const password = passwordInput.value;
 
     if (
-        !usernameInput.value.trim() ||
+        !identifier ||
         !password ||
         (turnstileEnabled && !turnstileToken)
     ) {
@@ -94,7 +93,7 @@ async function login() {
 
     try {
         const result = await api("/api/login", {
-            email,
+            identifier,
             password,
             turnstileToken
         });

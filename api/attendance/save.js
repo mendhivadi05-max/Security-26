@@ -1,4 +1,4 @@
-const { firestore, admin } = require("../_firebaseAdmin");
+const { firestore, FieldValue } = require("../_firebaseAdmin");
 const { jsonBody, rateLimit, requestId, requireAdmin, sendError } = require("../_apiUtils");
 const { logAction } = require("../_actionLog");
 const { memberName, sendBatch } = require("../_whatsappService");
@@ -34,7 +34,7 @@ module.exports = async function handler(request, response) {
 
         await attendanceRef.set({
             savedAt: Date.now(),
-            savedAtServer: admin.firestore.FieldValue.serverTimestamp(),
+            savedAtServer: FieldValue.serverTimestamp(),
             records
         });
 

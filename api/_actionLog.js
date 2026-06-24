@@ -1,4 +1,4 @@
-const { firestore, admin } = require("./_firebaseAdmin");
+const { firestore, FieldValue } = require("./_firebaseAdmin");
 
 function actorFromUser(user) {
     return {
@@ -15,7 +15,7 @@ async function logAction({ user, action, details = {}, source = "server" }) {
             details,
             actor: actorFromUser(user),
             source,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             createdAtMs: Date.now()
         });
     }

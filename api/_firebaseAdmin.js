@@ -1,4 +1,5 @@
 const admin = require("firebase-admin");
+const { FieldValue, getFirestore } = require("firebase-admin/firestore");
 
 function requiredEnv(name) {
     const value = process.env[name];
@@ -28,10 +29,11 @@ function initializeAdmin() {
 
 function firestore() {
     initializeAdmin();
-    return admin.firestore();
+    return getFirestore();
 }
 
 module.exports = {
     admin,
+    FieldValue,
     firestore
 };

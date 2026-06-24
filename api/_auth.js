@@ -25,6 +25,24 @@ function sessionCookie(idToken, maxAge) {
     return `clubDeskSession=${encodeURIComponent(idToken)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${secure}`;
 }
 
+function normalizeLoginEmail(identifier) {
+    const value = String(identifier || "").trim().toLowerCase();
+    if (!value) {
+        return "";
+    }
+
+    if (value.includes("@")) {
+        return value;
+    }
+
+    const domain = (process.env.LOGIN_EMAIL_DOMAIN || "gmail.com")
+        .trim()
+        .replace(/^@+/, "")
+        .toLowerCase();
+
+    return `${value}@${domain}`;
+}
+
 async function verifyTurnstile(token, remoteIp) {
     if (!process.env.TURNSTILE_SECRET_KEY) {
         throw new Error("TURNSTILE_SECRET_KEY is not configured.");
@@ -99,6 +117,7 @@ async function verifyFirebaseToken(idToken) {
 
 module.exports = {
     firebasePasswordLogin,
+    normalizeLoginEmail,
     parseCookies,
     sessionCookie,
     verifyFirebaseToken,

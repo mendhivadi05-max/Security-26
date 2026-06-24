@@ -1,4 +1,4 @@
-const { firestore, admin } = require("./_firebaseAdmin");
+const { firestore, FieldValue } = require("./_firebaseAdmin");
 const { templateLanguage, templateName } = require("./_whatsappTemplates");
 
 const GRAPH_VERSION = process.env.WHATSAPP_GRAPH_VERSION || "v20.0";
@@ -145,7 +145,7 @@ async function logMessage(entry) {
     try {
         await firestore().collection("whatsappMessages").add({
             ...entry,
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
+            createdAt: FieldValue.serverTimestamp()
         });
     }
     catch (error) {

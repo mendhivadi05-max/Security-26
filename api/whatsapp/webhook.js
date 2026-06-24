@@ -1,4 +1,4 @@
-const { firestore, admin } = require("../_firebaseAdmin");
+const { firestore, FieldValue } = require("../_firebaseAdmin");
 
 function verifyWebhook(request, response) {
     const mode = request.query["hub.mode"];
@@ -23,7 +23,7 @@ async function storeIncomingMessage(message, metadata, value) {
         displayPhoneNumber: metadata?.display_phone_number || "",
         raw: value,
         handled: false,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
+        createdAt: FieldValue.serverTimestamp()
     });
 }
 

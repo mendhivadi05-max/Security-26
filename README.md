@@ -63,7 +63,8 @@ must match the approved Meta templates:
 
 Firebase Email/Password authentication must be enabled, and the Firebase users
 used by this app must already exist. Usernames entered without an `@` are mapped
-to `<username>@clubdesk.local`.
+to `<username>@gmail.com` by default. Set `LOGIN_EMAIL_DOMAIN` if your Firebase
+users use a different email domain.
 
 ## Local Development
 
