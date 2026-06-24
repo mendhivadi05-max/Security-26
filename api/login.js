@@ -1,5 +1,6 @@
 const {
     firebasePasswordLogin,
+    isTurnstileConfigured,
     normalizeLoginEmail,
     sessionCookie,
     verifyTurnstile
@@ -13,12 +14,14 @@ module.exports = async function handler(request, response) {
     try {
         const { email, identifier, password, turnstileToken } = request.body || {};
         const loginEmail = normalizeLoginEmail(identifier || email);
-        if (!loginEmail || !password || !turnstileToken) {
+        const turnstileEnabled = isTurnstileConfigured();
+
+        if (!loginEmail || !password || (turnstileEnabled && !turnstileToken)) {
             return response.status(400).json({ error: "Complete all login fields." });
         }
 
         const remoteIp = request.headers["x-forwarded-for"]?.split(",")[0]?.trim();
-        if (!await verifyTurnstile(turnstileToken, remoteIp)) {
+        if (turnstileEnabled && !await verifyTurnstile(turnstileToken, remoteIp)) {
             return response.status(403).json({ error: "The human check was not accepted." });
         }
 

@@ -37,6 +37,7 @@ loadLocalEnvironment(path.join(__dirname, ".env.local"));
 
 const {
     firebasePasswordLogin,
+    isTurnstileConfigured,
     normalizeLoginEmail,
     parseCookies,
     sessionCookie,
@@ -73,11 +74,12 @@ const securityHeaders = {
     "X-Frame-Options": "DENY",
     "Content-Security-Policy": [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+        "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://challenges.cloudflare.com",
+        "script-src-elem 'self' 'unsafe-inline' https://www.gstatic.com https://challenges.cloudflare.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data:",
-        "connect-src 'self' https://identitytoolkit.googleapis.com https://challenges.cloudflare.com",
+        "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.googleapis.com wss://*.firebaseio.com https://challenges.cloudflare.com",
         "frame-src https://challenges.cloudflare.com",
         "base-uri 'self'",
         "form-action 'self'",
@@ -171,11 +173,12 @@ async function handleApi(request, response, pathname) {
     }
 
     if (pathname === "/api/auth-config" && request.method === "GET") {
+        const turnstileEnabled =
+            isProduction && isTurnstileConfigured();
+
         sendJson(response, 200, {
-            turnstileEnabled: isProduction,
-            turnstileSiteKey: isProduction
-                ? process.env.TURNSTILE_SITE_KEY || ""
-                : ""
+            turnstileEnabled,
+            turnstileSiteKey: turnstileEnabled ? process.env.TURNSTILE_SITE_KEY : ""
         });
         return;
     }
@@ -190,12 +193,15 @@ async function handleApi(request, response, pathname) {
     if (pathname === "/api/login") {
         const { email, identifier, password, turnstileToken } = body;
         const loginEmail = normalizeLoginEmail(identifier || email);
-        if (!loginEmail || !password || (isProduction && !turnstileToken)) {
+        const turnstileEnabled =
+            isProduction && isTurnstileConfigured();
+
+        if (!loginEmail || !password || (turnstileEnabled && !turnstileToken)) {
             sendJson(response, 400, { error: "Complete all required login fields." });
             return;
         }
 
-        if (isProduction) {
+        if (turnstileEnabled) {
             const turnstileAccepted = await verifyTurnstile(
                 turnstileToken,
                 request.socket.remoteAddress

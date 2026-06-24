@@ -43,6 +43,10 @@ function normalizeLoginEmail(identifier) {
     return `${value}@${domain}`;
 }
 
+function isTurnstileConfigured() {
+    return Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY);
+}
+
 async function verifyTurnstile(token, remoteIp) {
     if (!process.env.TURNSTILE_SECRET_KEY) {
         throw new Error("TURNSTILE_SECRET_KEY is not configured.");
@@ -117,6 +121,7 @@ async function verifyFirebaseToken(idToken) {
 
 module.exports = {
     firebasePasswordLogin,
+    isTurnstileConfigured,
     normalizeLoginEmail,
     parseCookies,
     sessionCookie,

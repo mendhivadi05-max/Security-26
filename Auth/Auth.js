@@ -7,6 +7,7 @@ const turnstileContainer = document.getElementById("turnstile-widget");
 let turnstileWidgetId = null;
 let turnstileToken = "";
 let turnstileEnabled = true;
+let turnstileRenderStarted = false;
 
 function showError(message, success = false) {
     error.style.color = success ? "green" : "red";
@@ -31,6 +32,11 @@ async function api(path, data = {}) {
 }
 
 async function renderTurnstile() {
+    if (turnstileRenderStarted) {
+        return;
+    }
+    turnstileRenderStarted = true;
+
     try {
         const response = await fetch("/api/auth-config", { cache: "no-store" });
         const config = await response.json();
@@ -46,6 +52,11 @@ async function renderTurnstile() {
 
         if (!config.turnstileSiteKey) {
             throw new Error("Turnstile is not configured.");
+        }
+
+        if (!window.turnstile) {
+            turnstileRenderStarted = false;
+            return;
         }
 
         turnstileWidgetId = window.turnstile.render(turnstileContainer, {
@@ -66,6 +77,7 @@ async function renderTurnstile() {
         });
     }
     catch (configError) {
+        turnstileRenderStarted = false;
         showError(configError.message);
     }
 }
@@ -125,3 +137,7 @@ document.addEventListener("keydown", event => {
 });
 
 window.onloadTurnstileCallback = renderTurnstile;
+
+if (window.turnstile) {
+    renderTurnstile();
+}

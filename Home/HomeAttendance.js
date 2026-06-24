@@ -93,13 +93,15 @@ attendanceForm.addEventListener("submit", async (event) => {
                 }
             );
 
-        await logClientAction("attendance_session_created", {
+        logClientAction("attendance_session_created", {
             sessionId: sessionRef.id,
             title,
             hostedBy,
             venue,
             time,
             defaultStatus
+        }).catch(error => {
+            console.warn("Could not log attendance session creation:", error);
         });
 
         window.location.href =
