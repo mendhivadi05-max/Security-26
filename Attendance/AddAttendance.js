@@ -36,6 +36,9 @@ const urlParams =
 const sessionId =
     urlParams.get("sessionId");
 
+const pageMode =
+    urlParams.get("mode") === "view" ? "view" : "edit";
+
 if (!sessionId) {
     alert("Session not found.");
     window.location.href = "../Home/Home.html";
@@ -45,6 +48,26 @@ const attendanceData = {};
 
 let attendanceLocked = false;
 let defaultStatus = "Present";
+let savedAttendanceRecords = {};
+
+function isLockedAfterTwoDays(sessionDate) {
+    if (!sessionDate) {
+        return false;
+    }
+
+    const meetingDate = new Date(`${sessionDate}T00:00:00`);
+    if (Number.isNaN(meetingDate.getTime())) {
+        return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lockDate = new Date(meetingDate);
+    lockDate.setDate(lockDate.getDate() + 2);
+
+    return today > lockDate;
+}
 
 async function loadSession() {
     try {
@@ -81,20 +104,37 @@ async function loadSession() {
         defaultStatus =
             session.defaultStatus || "Present";
 
-        const today =
-            new Date()
-                .toISOString()
-                .split("T")[0];
+        attendanceLocked =
+            pageMode === "view" || isLockedAfterTwoDays(session.date);
 
-        if (session.date && session.date !== today) {
+        if (attendanceLocked) {
             attendanceLocked = true;
             saveButton.style.display = "none";
-            sessionTitle.textContent += " Locked";
+            sessionTitle.textContent += pageMode === "view"
+                ? " View Only"
+                : " Locked";
         }
     }
     catch (error) {
         console.error(error);
         alert("Error loading session.");
+    }
+}
+
+async function loadSavedAttendance() {
+    try {
+        const attendanceSnap =
+            await getDoc(doc(db, "attendance", sessionId));
+
+        savedAttendanceRecords =
+            attendanceSnap.exists()
+                ? attendanceSnap.data().records || {}
+                : {};
+    }
+    catch (error) {
+        console.error(error);
+        showErrorToast("Could not load saved attendance.");
+        savedAttendanceRecords = {};
     }
 }
 
@@ -111,14 +151,20 @@ async function loadMembers() {
             const member =
                 memberDoc.data();
 
+            const savedRecord =
+                savedAttendanceRecords[memberDoc.id] || {};
+
+            const status =
+                savedRecord.status || defaultStatus;
+
             attendanceData[memberDoc.id] = {
-                name: member.name,
-                rollNumber: member.prn || "",
-                status: defaultStatus
+                name: savedRecord.name || member.name,
+                rollNumber: savedRecord.rollNumber || member.prn || "",
+                status
             };
 
             const checked =
-                defaultStatus === "Present" ? "checked" : "";
+                status === "Present" ? "checked" : "";
 
             membersContainer.innerHTML += `
                 <div class="member-row">
@@ -133,7 +179,7 @@ async function loadMembers() {
                                 onchange="setAttendance('${memberDoc.id}', this)">
                             <span class="toggle-track"></span>
                         </label>
-                        <span class="status-label">${defaultStatus}</span>
+                        <span class="status-label">${status}</span>
                     </div>
                 </div>
             `;
@@ -173,7 +219,11 @@ window.setAttendance = function (memberId, input) {
 
 saveButton.onclick = async function () {
     if (attendanceLocked) {
-        alert("Attendance is locked.");
+        alert(
+            pageMode === "view"
+                ? "Open Update Attendance to edit this record."
+                : "Attendance locks 2 days after the meeting date."
+        );
         return;
     }
 
@@ -211,6 +261,7 @@ saveButton.onclick = async function () {
 
 async function initializePage() {
     await loadSession();
+    await loadSavedAttendance();
     await loadMembers();
 }
 

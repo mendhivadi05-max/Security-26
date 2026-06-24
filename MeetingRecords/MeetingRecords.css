@@ -30,8 +30,10 @@ body{margin:0;padding:28px 0}
 .records-page{width:min(1000px,calc(100% - 32px));margin:auto}
 #recordsContainer{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:28px}
 #recordsContainer .empty-state-panel{grid-column:1/-1}
+.dashboard-link{background:#a0ff9f!important}
 .session-card{border:5px solid #111;border-radius:0;background:#fffdf8;box-shadow:8px 8px 0 #111;padding:20px;margin:0}
-.session-card button{margin-top:8px;background:#a9d6ff}.session-card button:last-child{background:#ff5b5b}
+.session-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.session-card button{margin-top:8px;background:#a9d6ff}.session-card button:nth-child(2){background:#a0ff9f}.session-card button:last-child{background:#ff5b5b}.session-card button:disabled{background:#d1d5db!important;color:#4b5563;cursor:not-allowed;opacity:.75}
 
 @media(max-width:720px){
     body{padding:16px 0}
@@ -39,4 +41,5 @@ body{margin:0;padding:28px 0}
     #recordsContainer{grid-template-columns:1fr;gap:16px;margin-top:20px}
     .session-card{padding:16px;box-shadow:5px 5px 0 #111}
     .session-card button{width:100%;min-height:44px;margin-right:0}
+    .session-actions{display:grid}
 }
