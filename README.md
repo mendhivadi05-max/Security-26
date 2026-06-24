@@ -1,6 +1,6 @@
 # ClubDesk
 
-Static ClubDesk frontend with Vercel serverless authentication endpoints,
+Static ClubDesk frontend with local Node authentication endpoints,
 Firebase/Firestore, and backend WhatsApp Cloud API automation. It helps club
 owners and event hosts collaborate with team members, manage volunteers, record
 attendance, and send approved WhatsApp templates without exposing Meta secrets
@@ -33,39 +33,6 @@ must match the approved Meta templates:
 - `absentNotice`: `name`, `meeting_name`, `date`, `time`
 - `absenceReview`: `name`, `meeting_name`
 
-## Deploy to Vercel
-
-1. Push this repository to GitHub.
-2. Import the GitHub repository in Vercel.
-3. Keep the detected project root as the repository root. The included
-   `vercel.json` supplies the build and output settings.
-4. Add these Production environment variables in **Vercel -> Project Settings ->
-   Environment Variables**:
-
-   - `FIREBASE_API_KEY`
-   - `FIREBASE_PROJECT_ID`
-   - `FIREBASE_CLIENT_EMAIL`
-   - `FIREBASE_PRIVATE_KEY`
-   - `TURNSTILE_SITE_KEY`
-   - `TURNSTILE_SECRET_KEY`
-   - `META_WHATSAPP_ACCESS_TOKEN`
-   - `META_WHATSAPP_PHONE_NUMBER_ID`
-   - `META_WHATSAPP_WEBHOOK_VERIFY_TOKEN`
-   - `WHATSAPP_GRAPH_VERSION`
-   - `WHATSAPP_TEMPLATE_LANGUAGE`
-   - `WHATSAPP_TEMPLATE_MEETING_REMINDER`
-   - `WHATSAPP_TEMPLATE_ABSENT_NOTICE`
-   - `WHATSAPP_TEMPLATE_ABSENCE_REVIEW`
-
-5. In Cloudflare Turnstile, add the final `*.vercel.app` hostname and any custom
-   domain to the widget's allowed hostnames.
-6. Deploy.
-
-Firebase Email/Password authentication must be enabled, and the Firebase users
-used by this app must already exist. Usernames entered without an `@` are mapped
-to `<username>@gmail.com` by default. Set `LOGIN_EMAIL_DOMAIN` if your Firebase
-users use a different email domain.
-
 ## Local Development
 
 Copy `.env.example` to `.env.local`, fill in the values, and run:
@@ -74,16 +41,20 @@ Copy `.env.example` to `.env.local`, fill in the values, and run:
 npm start
 ```
 
+Firebase Email/Password authentication must be enabled, and the Firebase users
+used by this app must already exist. Usernames entered without an `@` are mapped
+to `<username>@gmail.com` by default. Set `LOGIN_EMAIL_DOMAIN` if your Firebase
+users use a different email domain.
+
 The local server disables Turnstile unless `NODE_ENV=production` is set. For
 local WhatsApp testing, keep the values in `.env.local`. Do not commit that file.
 The Firebase Admin private key can use escaped newlines, as shown in
 `.env.example`.
 
-Run the same production validation used by Vercel with:
+Run the syntax validation with:
 
 ```sh
 npm run build
 ```
 
-The separate `functions/` directory contains Firebase Functions and is not
-deployed by Vercel.
+The separate `functions/` directory contains Firebase Functions.
