@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <style>body { visibility: hidden; }</style>
+    <script type="module" src="../Auth/AuthGuard.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Security'26 - Whatsapp Reminders</title>
+
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Flags.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Whatsapp</h1>
+
+            <nav class="page-nav" aria-label="Page navigation">
+                <a class="secondary-link" href="../Home/Home.html">Home</a>
+                <a class="secondary-link" href="Flags.html">View Flags</a>
+            </nav>
+        </div>
+
+        <section class="reminder-panel" aria-labelledby="reminderTitle">
+            <div class="reminder-heading">
+                <div>
+                    <p class="section-kicker">Whatsapp reminders</p>
+                    <h2 id="reminderTitle">Select members to remind</h2>
+                    <p>
+                        Members with "Send reminder" enabled will receive
+                        the approved <strong>club_meeting_reminder</strong> template.
+                    </p>
+                </div>
+
+                <span class="selection-count" id="selectionCount">0 selected</span>
+            </div>
+
+            <label class="meeting-time-field" for="meetingTime">
+                Meeting time
+                <input
+                    type="text"
+                    id="meetingTime"
+                    placeholder="Example: Sunday, 4:00 PM"
+                    maxlength="100">
+            </label>
+
+            <div class="reminder-tools">
+                <label class="reminder-search-field" for="reminderSearch">
+                    Search members
+                    <input
+                        type="search"
+                        id="reminderSearch"
+                        placeholder="Search by name or phone number">
+                </label>
+
+                <button type="button" class="select-all-reminders-button" id="selectAllReminders">
+                    Select everyone
+                </button>
+            </div>
+
+            <div class="member-reminder-list" id="memberReminderList">
+                Loading members...
+            </div>
+
+            <div class="reminder-actions">
+                <button type="button" class="save-selection-button" id="saveReminderSelection">
+                    Save selection
+                </button>
+
+                <button type="button" class="send-reminders-button" id="sendWhatsAppReminders">
+                    Send WhatsApp Reminders
+                </button>
+            </div>
+
+            <p class="reminder-result" id="reminderResult" role="status"></p>
+        </section>
+    </div>
+
+    <div class="modal-overlay" id="sendConfirmModal">
+        <div class="modal-content send-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="sendConfirmTitle">
+            <h3 id="sendConfirmTitle">Confirm WhatsApp Reminder</h3>
+            <p id="sendConfirmSummary"></p>
+            <div class="confirm-recipient-list" id="sendConfirmRecipients"></div>
+            <div class="modal-actions">
+                <button type="button" id="confirmSendReminders">Send now</button>
+                <button type="button" id="cancelSendReminders">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="WhatsappReminder.js"></script>
+</body>
+
+</html>

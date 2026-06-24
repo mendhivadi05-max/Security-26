@@ -1,5 +1,6 @@
 import { db } from "../Firebase/Firebase.js";
-import { getApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { showSuccess, showErrorToast } from "../Shared/Toast.js";
+import { logClientAction } from "../Shared/ActionLog.js";
 import {
     collection,
     getDocs,
@@ -8,189 +9,12 @@ import {
     updateDoc,
     deleteField,
     query,
-    orderBy,
-    writeBatch
+    orderBy
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-import {
-    getFunctions,
-    httpsCallable
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 
 const flagsContainer = document.getElementById("flagsContainer");
 const loadingMessage = document.getElementById("loadingMessage");
 const noIssuesMessage = document.getElementById("noIssuesMessage");
-const memberReminderList = document.getElementById("memberReminderList");
-const selectionCount = document.getElementById("selectionCount");
-const meetingTimeInput = document.getElementById("meetingTime");
-const saveSelectionButton = document.getElementById("saveReminderSelection");
-const sendRemindersButton = document.getElementById("sendWhatsAppReminders");
-const reminderResult = document.getElementById("reminderResult");
-const escapeHtml = value => (value || "").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-// This must match the region used by the deployed Cloud Function.
-const functions = getFunctions(getApp(), "asia-south1");
-
-let reminderMembers = [];
-
-function memberPhone(member) {
-    return member.whatsappNumber || member.phone || member.contact?.whatsappNumber || "";
-}
-
-function updateSelectionCount() {
-    const selected = document.querySelectorAll(".send-reminder-checkbox:checked").length;
-    selectionCount.textContent = `${selected} selected`;
-}
-
-function renderReminderMembers() {
-    if (!reminderMembers.length) {
-        memberReminderList.innerHTML = '<p class="empty-reminder-list">No members found.</p>';
-        updateSelectionCount();
-        return;
-    }
-
-    memberReminderList.innerHTML = reminderMembers.map(member => {
-        const phone = memberPhone(member);
-        const active = member.active !== false;
-        const sendReminder = member.sendReminder === true;
-        const status = member.reminderStatus || "not_sent";
-
-        return `
-            <article class="reminder-member" data-member-id="${member.id}">
-                <div class="reminder-member-copy">
-                    <strong>${escapeHtml(member.name || "Unnamed")}</strong>
-                    <span>${phone ? escapeHtml(phone) : "No WhatsApp number"}</span>
-                    <small>Status: ${escapeHtml(status)}</small>
-                </div>
-
-                <label class="member-option">
-                    <input
-                        type="checkbox"
-                        class="active-member-checkbox"
-                        ${active ? "checked" : ""}>
-                    Active
-                </label>
-
-                <label class="member-option">
-                    <input
-                        type="checkbox"
-                        class="send-reminder-checkbox"
-                        ${sendReminder ? "checked" : ""}
-                        ${phone ? "" : "disabled"}>
-                    Send reminder
-                </label>
-            </article>
-        `;
-    }).join("");
-
-    updateSelectionCount();
-}
-
-async function loadReminderMembers() {
-    const memberDocs = await getDocs(collection(db, "members"));
-    const normalizationBatch = writeBatch(db);
-    let needsNormalization = false;
-
-    reminderMembers = memberDocs.docs.map(memberDoc => {
-        const member = { id: memberDoc.id, ...memberDoc.data() };
-        const normalizedPhone = memberPhone(member);
-        const missingFields =
-            typeof member.active !== "boolean" ||
-            typeof member.sendReminder !== "boolean" ||
-            !Object.hasOwn(member, "reminderStatus") ||
-            (normalizedPhone && !member.whatsappNumber);
-
-        if (missingFields) {
-            needsNormalization = true;
-            normalizationBatch.set(
-                memberDoc.ref,
-                {
-                    phone: member.phone || normalizedPhone,
-                    whatsappNumber: member.whatsappNumber || normalizedPhone,
-                    active: member.active !== false,
-                    sendReminder: member.sendReminder === true,
-                    lastReminderSentAt: member.lastReminderSentAt || null,
-                    reminderStatus: member.reminderStatus || "not_sent"
-                },
-                { merge: true }
-            );
-        }
-
-        return member;
-    });
-
-    // This one-time normalization keeps old member records compatible with
-    // the new reminder function without touching attendance documents.
-    if (needsNormalization) {
-        await normalizationBatch.commit();
-    }
-
-    renderReminderMembers();
-}
-
-async function saveReminderSelection() {
-    const rows = [...document.querySelectorAll(".reminder-member")];
-    const batch = writeBatch(db);
-
-    rows.forEach(row => {
-        const memberId = row.dataset.memberId;
-        const active = row.querySelector(".active-member-checkbox").checked;
-        const sendReminder = row.querySelector(".send-reminder-checkbox").checked;
-
-        batch.set(
-            doc(db, "members", memberId),
-            {
-                active,
-                sendReminder,
-                reminderStatus: sendReminder ? "ready" : "not_selected"
-            },
-            { merge: true }
-        );
-    });
-
-    await batch.commit();
-    reminderResult.textContent = "Reminder selection saved.";
-}
-
-async function sendWhatsAppReminders() {
-    const meetingTime = meetingTimeInput.value.trim();
-
-    if (!meetingTime) {
-        reminderResult.textContent = "Enter the meeting time before sending.";
-        meetingTimeInput.focus();
-        return;
-    }
-
-    if (!document.querySelector(".send-reminder-checkbox:checked")) {
-        reminderResult.textContent = "Select at least one member.";
-        return;
-    }
-
-    sendRemindersButton.disabled = true;
-    saveSelectionButton.disabled = true;
-    reminderResult.textContent = "Saving selection and sending reminders...";
-
-    try {
-        await saveReminderSelection();
-
-        const callSendReminders = httpsCallable(functions, "sendWhatsAppReminders");
-        const response = await callSendReminders({ meetingTime });
-        const { attempted, succeeded, failed } = response.data;
-
-        reminderResult.textContent =
-            `Finished: ${succeeded} sent, ${failed} failed, ${attempted} attempted.`;
-
-        await loadReminderMembers();
-    }
-    catch (error) {
-        console.error("WhatsApp reminder error:", error);
-        reminderResult.textContent =
-            error.message || "Could not send WhatsApp reminders.";
-    }
-    finally {
-        sendRemindersButton.disabled = false;
-        saveSelectionButton.disabled = false;
-    }
-}
-
 async function loadFlags() {
     try {
         const [memberDocs, sessionDocs, attendanceDocs, flagDocs] = await Promise.all([
@@ -224,6 +48,7 @@ async function loadFlags() {
                 <p>${member.whatsappNumber||member.phone?`WhatsApp: ${escapeHtml(member.whatsappNumber||member.phone)}`:"No WhatsApp number on record"}</p>
                 <div class="flag-card-actions">
                     <a class="secondary-link" href="../Database/VolunteerRecords.html?member=${encodeURIComponent(id)}">View profile</a>
+                    ${severe?`<button class="contact-button" onclick="sendFlagMessage('${id}',${streak || 0})">Send WhatsApp review</button>`:""}
                     ${streak>=3&&!contacted?`<button class="contact-button" onclick="markContacted('${id}',${streak})">Mark contacted</button>`:""}
                     ${contacted?'<span class="contacted-text">Contacted</span>':""}
                     ${manual?`<button class="remove-flag-button" onclick="removeFlag('${id}')">Remove flag</button>`:""}
@@ -232,12 +57,65 @@ async function loadFlags() {
     } catch(error) {
         console.error("Flags Error:",error);
         loadingMessage.textContent="Error loading attendance records.";
+        showErrorToast("Error loading attendance records.");
     }
 }
 
 window.markContacted=async function(memberId,streak){
     await setDoc(doc(db,"flags",memberId),{contactedAtStreak:streak,contactedAt:Date.now()},{merge:true});
+    showSuccess("Marked as contacted.");
+    await logClientAction("flag_marked_contacted", { memberId, streak });
     loadFlags();
+};
+window.sendFlagMessage=async function(memberId,streak){
+    const meetingName = prompt("Meeting name for the WhatsApp template:", "club meeting");
+    if (!meetingName) return;
+
+    const button = document.querySelector(`button[onclick="sendFlagMessage('${memberId}',${streak || 0})"]`);
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Sending...";
+    }
+
+    try {
+        const response = await fetch("/api/whatsapp/send-targeted", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                memberIds: [memberId],
+                templateKey: "absenceReview",
+                variables: { meeting_name: meetingName }
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Could not send WhatsApp review.");
+        }
+
+        if (result.sent > 0 && streak >= 3) {
+            await setDoc(doc(db,"flags",memberId),{
+                contactedAtStreak:streak,
+                contactedAt:Date.now(),
+                lastWhatsAppReviewSentAt:Date.now()
+            },{merge:true});
+        }
+
+        if (result.failed > 0) {
+            showErrorToast(`WhatsApp review: ${result.sent} sent, ${result.failed} failed.`);
+        }
+        else {
+            showSuccess("WhatsApp review sent.");
+        }
+        loadFlags();
+    }
+    catch (error) {
+        console.error("Flag WhatsApp review error:", error);
+        showErrorToast(error.message || "Could not send WhatsApp review.");
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Send WhatsApp review";
+        }
+    }
 };
 window.removeFlag=async function(memberId){
     if (!confirm("Remove this person's manual flag?")) return;
@@ -247,35 +125,9 @@ window.removeFlag=async function(memberId){
         source:deleteField(),
         flaggedAt:deleteField()
     });
+    showSuccess("Flag removed.");
+    await logClientAction("manual_flag_removed", { memberId });
     loadFlags();
 };
 loadFlags();
 
-memberReminderList.addEventListener("change", event => {
-    if (event.target.classList.contains("send-reminder-checkbox")) {
-        updateSelectionCount();
-    }
-});
-
-saveSelectionButton.addEventListener("click", async () => {
-    saveSelectionButton.disabled = true;
-    reminderResult.textContent = "Saving selection...";
-
-    try {
-        await saveReminderSelection();
-    }
-    catch (error) {
-        console.error("Reminder selection error:", error);
-        reminderResult.textContent = "Could not save the reminder selection.";
-    }
-    finally {
-        saveSelectionButton.disabled = false;
-    }
-});
-
-sendRemindersButton.addEventListener("click", sendWhatsAppReminders);
-
-loadReminderMembers().catch(error => {
-    console.error("Member reminder load error:", error);
-    memberReminderList.textContent = "Could not load members.";
-});

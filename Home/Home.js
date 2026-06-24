@@ -346,6 +346,12 @@ const closeDatabaseRecords =
 const dashboardInsightSearch =
     document.getElementById("dashboardInsightSearch");
 
+const whatsappTile =
+    document.getElementById("whatsappTile");
+
+const closeWhatsappModal =
+    document.getElementById("closeWhatsappModal");
+
 databaseRecordsTile.addEventListener("click", event => {
     event.preventDefault();
     openModal("databaseRecordsModal");
@@ -365,4 +371,13 @@ dashboardInsightSearch.addEventListener("submit", event => {
         query
             ? `../Database/BrowseStatistics.html?q=${encodeURIComponent(query)}`
             : "../Database/BrowseStatistics.html";
+});
+
+whatsappTile.addEventListener("click", event => {
+    event.preventDefault();
+    openModal("whatsappModal");
+});
+
+closeWhatsappModal.addEventListener("click", () => {
+    closeModal("whatsappModal");
 });

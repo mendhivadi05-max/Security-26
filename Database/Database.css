@@ -744,6 +744,43 @@ textarea{
         min-height:46px;
     }
 
+    .database-shell,
+    .page-shell{
+        width:min(100% - 20px,1120px);
+        padding:18px 0;
+    }
+
+    .database-panel,
+    .volunteer-form,
+    .search-panel,
+    .profile-card,
+    .statistics-toolbar,
+    .analytics-panel{
+        box-shadow:5px 5px 0 #111;
+    }
+
+    .volunteer-form,
+    .profile-card{
+        padding:16px;
+    }
+
+    .summary-card strong{
+        font-size:1.45rem;
+    }
+
+    .meeting-row{
+        padding:12px;
+    }
+
+    input,
+    select,
+    textarea,
+    .primary-btn,
+    .secondary-btn,
+    .secondary-link{
+        min-height:44px;
+    }
+
     .flag-dialog-actions{
         flex-direction:column;
     }

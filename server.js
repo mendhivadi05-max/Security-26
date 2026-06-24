@@ -20,7 +20,13 @@ function loadLocalEnvironment(filePath) {
         }
 
         const name = trimmed.slice(0, separator).trim();
-        const value = trimmed.slice(separator + 1).trim();
+        let value = trimmed.slice(separator + 1).trim();
+        if (
+            (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+        ) {
+            value = value.slice(1, -1);
+        }
         if (name && process.env[name] === undefined) {
             process.env[name] = value;
         }
@@ -64,7 +70,7 @@ function readJson(request) {
         let body = "";
         request.on("data", chunk => {
             body += chunk;
-            if (body.length > 10_000) {
+            if (body.length > 1_000_000) {
                 request.destroy();
                 reject(new Error("Request too large"));
             }
@@ -81,7 +87,69 @@ function readJson(request) {
     });
 }
 
+function createApiResponse(response) {
+    return {
+        setHeader: (name, value) => response.setHeader(name, value),
+        status(statusCode) {
+            response.statusCode = statusCode;
+            return this;
+        },
+        json(body) {
+            if (!response.headersSent) {
+                response.setHeader("Content-Type", "application/json; charset=utf-8");
+                response.setHeader("Cache-Control", "no-store");
+            }
+            response.end(JSON.stringify(body));
+        },
+        send(body) {
+            if (!response.headersSent) {
+                response.setHeader("Content-Type", "text/plain; charset=utf-8");
+                response.setHeader("Cache-Control", "no-store");
+            }
+            response.end(String(body ?? ""));
+        }
+    };
+}
+
+function apiModulePath(pathname) {
+    if (["/api/auth-config", "/api/login", "/api/session", "/api/logout"].includes(pathname)) {
+        return "";
+    }
+
+    const parts = pathname
+        .replace(/^\/api\//, "")
+        .split("/")
+        .filter(Boolean);
+
+    if (!parts.length || parts.some(part => part.includes(".."))) {
+        return "";
+    }
+
+    return path.join(root, "api", ...parts) + ".js";
+}
+
+async function dispatchApiModule(request, response, requestUrl, pathname) {
+    const modulePath = apiModulePath(pathname);
+    if (!modulePath || !fs.existsSync(modulePath)) {
+        return false;
+    }
+
+    request.query = Object.fromEntries(requestUrl.searchParams.entries());
+    if (request.method !== "GET") {
+        request.body = await readJson(request);
+    }
+
+    const handler = require(modulePath);
+    await handler(request, createApiResponse(response));
+    return true;
+}
+
 async function handleApi(request, response, pathname) {
+    const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+    if (await dispatchApiModule(request, response, requestUrl, pathname)) {
+        return;
+    }
+
     if (pathname === "/api/auth-config" && request.method === "GET") {
         sendJson(response, 200, {
             turnstileEnabled: isProduction,

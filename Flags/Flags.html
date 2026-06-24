@@ -26,12 +26,7 @@
 
             <h1>Attendance Flags</h1>
 
-            <button class="back-button"
-                    onclick="window.location.href='../Home/Home.html'">
-
-                ← Home
-
-            </button>
+            <nav class="page-nav" aria-label="Page navigation"><a class="secondary-link" href="../Home/Home.html">Home</a><a class="secondary-link" href="WhatsappReminder.html">Whatsapp Reminder</a></nav>
 
         </div>
 
@@ -73,60 +68,14 @@
 
         </div>
 
-        <section class="reminder-panel" aria-labelledby="reminderTitle">
-            <div class="reminder-heading">
-                <div>
-                    <p class="section-kicker">WhatsApp reminders</p>
-                    <h2 id="reminderTitle">Select members to remind</h2>
-                    <p>
-                        Active members with “Send reminder” enabled will receive
-                        the approved <strong>club_meeting_reminder</strong> template.
-                    </p>
-                </div>
-
-                <span class="selection-count" id="selectionCount">0 selected</span>
-            </div>
-
-            <label class="meeting-time-field" for="meetingTime">
-                Meeting time
-                <input
-                    type="text"
-                    id="meetingTime"
-                    placeholder="Example: Sunday, 4:00 PM"
-                    maxlength="100">
-            </label>
-
-            <div class="member-reminder-list" id="memberReminderList">
-                Loading members...
-            </div>
-
-            <div class="reminder-actions">
-                <button type="button" class="save-selection-button" id="saveReminderSelection">
-                    Save selection
-                </button>
-
-                <button type="button" class="send-reminders-button" id="sendWhatsAppReminders">
-                    Send WhatsApp Reminders
-                </button>
-            </div>
-
-            <p class="reminder-result" id="reminderResult" role="status"></p>
-        </section>
-
-
-        <div id="loadingMessage">
+<div id="loadingMessage">
 
             Loading attendance records...
 
         </div>
 
 
-        <div id="noIssuesMessage"
-             style="display: none;">
-
-            🎉 Great! No warnings or flags found.
-
-        </div>
+        <div id="noIssuesMessage" class="empty-state-panel" style="display: none;"><strong>Great! No warnings or flags found.</strong><span>Attendance looks clean right now.</span></div>
 
 
         <div id="flagsContainer">
@@ -144,3 +93,5 @@
 </body>
 
 </html>
+
+

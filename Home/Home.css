@@ -433,6 +433,7 @@ body{
     .header{
         display:flex;
         justify-content:space-between;
+        position:relative;
     }
 
     .header-center{
@@ -441,6 +442,12 @@ body{
 
     .mobile-title{
         display:inline-block;
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-50%,-50%);
+        text-align:center;
+        white-space:nowrap;
     }
 
     .database-insight-search > div{
@@ -460,6 +467,30 @@ body{
     .logo{
         height:100px;
     }
+
+    .log-box{
+        min-height:112px;
+        padding:18px;
+    }
+
+    .modal-content{
+        width:min(100%,420px);
+        max-height:calc(100vh - 28px);
+    }
+
+    .database-choice-list a{
+        min-height:54px;
+    }
+
+    .legend-container{
+        align-items:stretch;
+        flex-direction:column;
+        gap:10px;
+    }
+
+    .add-category-btn{
+        min-height:42px;
+    }
 }
 
 /* Login-page visual system */
@@ -476,4 +507,9 @@ body{
 .calendar-day:hover{background:#ffe45c;border-radius:0}.calendar-day.today{background:#a0ff9f;border:2px solid #111;border-radius:0}
 .legend-container{background:#fffdf8;border:4px solid #111;border-radius:0;box-shadow:5px 5px 0 #111}
 .legend-item{border:2px solid #111;border-radius:0}
-@media(max-width:768px){.logo{height:62px}.user-greeting{display:none}.left-panel{grid-template-columns:1fr}}
+@media(max-width:768px){
+    .logo{height:62px}
+    .user-greeting{display:none}
+    .left-panel{grid-template-columns:1fr}
+    .header-right{min-width:120px}
+}

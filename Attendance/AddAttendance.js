@@ -1,11 +1,11 @@
 import { db } from "../Firebase/Firebase.js";
+import { showSuccess, showErrorToast } from "../Shared/Toast.js";
 
 import {
     collection,
     getDocs,
     getDoc,
-    doc,
-    setDoc
+    doc
 }
 from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
@@ -178,20 +178,34 @@ saveButton.onclick = async function () {
     }
 
     try {
-        await setDoc(
-            doc(db, "attendance", sessionId),
-            {
-                savedAt: Date.now(),
-                records: attendanceData
-            }
-        );
+        const response =
+            await fetch("/api/attendance/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionId,
+                    records: attendanceData
+                })
+            });
 
-        alert("Attendance saved successfully!");
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Error saving attendance.");
+        }
+
+        const whatsappMessage =
+            result.firstSave
+                ? ` WhatsApp absent notices: ${result.whatsapp.sent} sent, ${result.whatsapp.failed} failed.`
+                : " WhatsApp absent notices were skipped because this attendance was already saved once.";
+
+        showSuccess(`Attendance saved successfully!${whatsappMessage}`);
         window.location.href = "../Home/Home.html";
     }
     catch (error) {
         console.error(error);
-        alert("Error saving attendance.");
+        showErrorToast(error.message || "Error saving attendance.");
     }
 };
 

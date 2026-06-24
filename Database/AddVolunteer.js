@@ -1,4 +1,6 @@
 import { db } from "../Firebase/Firebase.js";
+import { showSuccess, showErrorToast } from "../Shared/Toast.js";
+import { logClientAction } from "../Shared/ActionLog.js";
 
 import {
     collection,
@@ -47,7 +49,7 @@ imageInput.addEventListener("change", async () => {
     if (file.size > 650 * 1024) {
         imageInput.value = "";
         imagePreview.textContent = "Image must be smaller than 650 KB";
-        alert("Please choose an image smaller than 650 KB.");
+        showErrorToast("Please choose an image smaller than 650 KB.");
         return;
     }
 
@@ -61,7 +63,7 @@ imageInput.addEventListener("change", async () => {
     }
     catch (error) {
         console.error("Image read error:", error);
-        alert("Could not load that image.");
+        showErrorToast("Could not load that image.");
     }
 });
 
@@ -93,14 +95,14 @@ form.addEventListener("submit", async (event) => {
         document.getElementById("volunteerWhatsapp").value.trim();
 
     if (!name || !dateOfBirth || !gender || !course || !batch || !whatsappNumber) {
-        alert("Please fill all required volunteer details.");
+        showErrorToast("Please fill all required volunteer details.");
         return;
     }
 
     try {
         const createdAt = Date.now();
 
-        await addDoc(
+        const memberRef = await addDoc(
             collection(db, "members"),
             {
                 name,
@@ -130,11 +132,16 @@ form.addEventListener("submit", async (event) => {
             }
         );
 
-        alert("Volunteer added successfully.");
+        showSuccess("Volunteer added successfully.");
+        await logClientAction("volunteer_created", {
+            memberId: memberRef.id,
+            name,
+            whatsappNumber
+        });
         form.reset();
     }
     catch (error) {
         console.error("Save volunteer error:", error);
-        alert("Error saving volunteer.");
+        showErrorToast("Error saving volunteer.");
     }
 });

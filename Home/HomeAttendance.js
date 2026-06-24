@@ -1,4 +1,6 @@
 import { db } from "../Firebase/Firebase.js";
+import { showErrorToast } from "../Shared/Toast.js";
+import { logClientAction } from "../Shared/ActionLog.js";
 
 import {
     collection,
@@ -70,7 +72,7 @@ attendanceForm.addEventListener("submit", async (event) => {
         defaultStatusToggle.checked ? "Present" : "Absent";
 
     if (title === "" || hostedBy === "" || venue === "" || time === "") {
-        alert("Please fill all required attendance details.");
+        showErrorToast("Please fill all required attendance details.");
         return;
     }
 
@@ -91,12 +93,21 @@ attendanceForm.addEventListener("submit", async (event) => {
                 }
             );
 
+        await logClientAction("attendance_session_created", {
+            sessionId: sessionRef.id,
+            title,
+            hostedBy,
+            venue,
+            time,
+            defaultStatus
+        });
+
         window.location.href =
             `../Attendance/AddAttendance.html?sessionId=${sessionRef.id}`;
     }
     catch (error) {
         console.error("Attendance setup error:", error);
-        alert("Error creating attendance session.");
+        showErrorToast("Error creating attendance session.");
     }
 });
 

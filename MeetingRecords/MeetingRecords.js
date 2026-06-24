@@ -1,4 +1,6 @@
 import { db } from "../Firebase/Firebase.js";
+import { showSuccess, showErrorToast } from "../Shared/Toast.js";
+import { logClientAction } from "../Shared/ActionLog.js";
 
 import {
     collection,
@@ -47,6 +49,16 @@ async function loadMeetings() {
             b.createdAt - a.createdAt
 
         );
+
+        if (sessions.length === 0) {
+            recordsContainer.innerHTML = `
+                <div class="empty-state-panel">
+                    <strong>No meeting records yet.</strong>
+                    <span>Create an instant session from the dashboard to start tracking attendance.</span>
+                </div>
+            `;
+            return;
+        }
 
 
         sessions.forEach((session) => {
@@ -122,9 +134,13 @@ async function loadMeetings() {
 
         console.error(error);
 
-        alert(
-            "Error loading meeting records."
-        );
+        recordsContainer.innerHTML = `
+            <div class="empty-state-panel">
+                <strong>Could not load meeting records.</strong>
+                <span>Please refresh and try again.</span>
+            </div>
+        `;
+        showErrorToast("Error loading meeting records.");
 
     }
 
@@ -178,9 +194,8 @@ window.deleteMeeting = async function (
         );
 
 
-        alert(
-            "Meeting deleted successfully."
-        );
+        showSuccess("Meeting deleted successfully.");
+        await logClientAction("meeting_deleted", { sessionId });
 
 
         loadMeetings();
@@ -191,9 +206,7 @@ window.deleteMeeting = async function (
 
         console.error(error);
 
-        alert(
-            "Error deleting meeting."
-        );
+        showErrorToast("Error deleting meeting.");
 
     }
 
