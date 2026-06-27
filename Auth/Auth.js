@@ -113,7 +113,7 @@ async function login() {
         passwordInput.value = "";
         sessionStorage.setItem("currentUserId", result.username);
         showError("Access Granted!", true);
-        window.location.replace("../Home/Home.html");
+        window.location.replace("../Home/Home");
     }
     catch (loginError) {
         passwordInput.value = "";

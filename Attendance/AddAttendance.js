@@ -1,13 +1,5 @@
-import { db } from "../Firebase/Firebase.js";
 import { showSuccess, showErrorToast } from "../Shared/Toast.js";
-
-import {
-    collection,
-    getDocs,
-    getDoc,
-    doc
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { loadCollections } from "../Shared/Api.js";
 
 const sessionTitle =
     document.querySelector(".session-details h1");
@@ -41,7 +33,7 @@ const pageMode =
 
 if (!sessionId) {
     alert("Session not found.");
-    window.location.href = "../Home/Home.html";
+    window.location.href = "../Home/Home";
 }
 
 const attendanceData = {};
@@ -49,6 +41,16 @@ const attendanceData = {};
 let attendanceLocked = false;
 let defaultStatus = "Present";
 let savedAttendanceRecords = {};
+let pageData = {};
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 
 function isLockedAfterTwoDays(sessionDate) {
     if (!sessionDate) {
@@ -71,20 +73,14 @@ function isLockedAfterTwoDays(sessionDate) {
 
 async function loadSession() {
     try {
-        const sessionRef =
-            doc(db, "sessions", sessionId);
+        const session =
+            (pageData.sessions || []).find(item => item.id === sessionId);
 
-        const sessionSnap =
-            await getDoc(sessionRef);
-
-        if (!sessionSnap.exists()) {
+        if (!session) {
             alert("Session does not exist.");
-            window.location.href = "../Home/Home.html";
+            window.location.href = "../Home/Home";
             return;
         }
-
-        const session =
-            sessionSnap.data();
 
         sessionTitle.textContent =
             session.title || "Add Attendance";
@@ -123,12 +119,9 @@ async function loadSession() {
 
 async function loadSavedAttendance() {
     try {
-        const attendanceSnap =
-            await getDoc(doc(db, "attendance", sessionId));
-
         savedAttendanceRecords =
-            attendanceSnap.exists()
-                ? attendanceSnap.data().records || {}
+            pageData.attendance?.find(item => item.id === sessionId)
+                ? pageData.attendance.find(item => item.id === sessionId).records || {}
                 : {};
     }
     catch (error) {
@@ -142,22 +135,15 @@ async function loadMembers() {
     membersContainer.innerHTML = "";
 
     try {
-        const querySnapshot =
-            await getDocs(
-                collection(db, "members")
-            );
-
-        querySnapshot.forEach((memberDoc) => {
-            const member =
-                memberDoc.data();
+        (pageData.members || []).forEach((member) => {
 
             const savedRecord =
-                savedAttendanceRecords[memberDoc.id] || {};
+                savedAttendanceRecords[member.id] || {};
 
             const status =
                 savedRecord.status || defaultStatus;
 
-            attendanceData[memberDoc.id] = {
+            attendanceData[member.id] = {
                 name: savedRecord.name || member.name,
                 rollNumber: savedRecord.rollNumber || member.prn || "",
                 status
@@ -168,15 +154,15 @@ async function loadMembers() {
 
             membersContainer.innerHTML += `
                 <div class="member-row">
-                    <span class="roll-number">${member.prn || "-"}</span>
-                    <span class="member-name">${member.name || "Unnamed"}</span>
+                    <span class="roll-number">${escapeHtml(member.prn || "-")}</span>
+                    <span class="member-name">${escapeHtml(member.name || "Unnamed")}</span>
 
                     <div class="status-cell">
                         <label class="attendance-toggle">
                             <input
                                 type="checkbox"
                                 ${checked}
-                                onchange="setAttendance('${memberDoc.id}', this)">
+                                onchange="setAttendance('${member.id}', this)">
                             <span class="toggle-track"></span>
                         </label>
                         <span class="status-label">${status}</span>
@@ -251,7 +237,7 @@ saveButton.onclick = async function () {
                 : " WhatsApp absent notices were skipped because this attendance was already saved once.";
 
         showSuccess(`Attendance saved successfully!${whatsappMessage}`);
-        window.location.href = "../Home/Home.html";
+        window.location.href = "../Home/Home";
     }
     catch (error) {
         console.error(error);
@@ -260,6 +246,7 @@ saveButton.onclick = async function () {
 };
 
 async function initializePage() {
+    pageData = await loadCollections(["sessions", "attendance", "members"], { sessionId });
     await loadSession();
     await loadSavedAttendance();
     await loadMembers();

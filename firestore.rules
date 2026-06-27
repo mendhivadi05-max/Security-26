@@ -20,10 +20,8 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Preserve the existing app's current direct Firestore access.
-    // These collections should be migrated to authenticated server calls next.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClubDesk Dashboard</title>
+    <title>security'26 Dashboard</title>
 
     <style>body { visibility: hidden; }</style>
     <script type="module" src="../Auth/AuthGuard.js"></script>
@@ -15,15 +15,15 @@
 
     <div class="header">
         <div class="header-left">
-            <img src="ClubDeskLogo.png" alt="ClubDesk logo" class="logo">
+            <img src="ClubDeskLogo.png" alt="security'26 logo" class="logo">
         </div>
 
         <div class="header-center">
-            <h1>ClubDesk</h1>
+            <h1>security'26</h1>
         </div>
 
         <div class="header-right">
-            <span class="mobile-title">ClubDesk</span>
+            <span class="mobile-title">security'26</span>
             <span class="user-greeting" id="userNameDisplay">Welcome</span>
             <button class="logout-btn" onclick="logout()">
                 Log Out
@@ -38,7 +38,7 @@
                 Instant Session
             </a>
 
-            <a href="../MeetingRecords/MeetingRecords.html" class="log-box">
+            <a href="../MeetingRecords/MeetingRecords" class="log-box">
                 Meeting Records
             </a>
 
@@ -49,6 +49,7 @@
             <a href="#" class="log-box" id="whatsappTile">
                 Whatsapp
             </a>
+
         </div>
 
         <div class="right-side-wrapper">
@@ -182,15 +183,15 @@
             <p class="database-modal-copy">What would you like to open?</p>
 
             <div class="database-choice-list">
-                <a href="../Database/VolunteerRecords.html">
+                <a href="../Database/VolunteerRecords">
                     <span>1</span>
                     Volunteer Records
                 </a>
-                <a href="../Database/BrowseStatistics.html">
+                <a href="../Database/BrowseStatistics">
                     <span>2</span>
                     Browse Statistics
                 </a>
-                <a href="../Database/AddVolunteer.html">
+                <a href="../Database/AddVolunteer">
                     <span>3</span>
                     Add New Volunteer
                 </a>
@@ -219,11 +220,11 @@
             <p class="database-modal-copy">Choose a WhatsApp workspace.</p>
 
             <div class="database-choice-list">
-                <a href="../Flags/WhatsappReminder.html">
+                <a href="../Flags/WhatsappReminder">
                     <span>1</span>
                     Whatsapp Reminder
                 </a>
-                <a href="../Flags/Flags.html">
+                <a href="../Flags/Flags">
                     <span>2</span>
                     View Flags
                 </a>
@@ -238,6 +239,7 @@
     <script src="Home.js"></script>
     <script type="module" src="HomeAttendance.js"></script>
     <script type="module" src="HomeBirthdays.js"></script>
+    <script type="module" src="../Shared/Preload.js"></script>
 
 </body>
 </html>

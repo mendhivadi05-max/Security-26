@@ -10,7 +10,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>ClubDesk - Whatsapp Reminders</title>
+    <title>security'26 - Whatsapp Reminders</title>
 
     <link rel="stylesheet" href="../Shared/Theme.css">
     <link rel="stylesheet" href="Flags.css">
@@ -22,8 +22,8 @@
             <h1>Whatsapp</h1>
 
             <nav class="page-nav" aria-label="Page navigation">
-                <a class="secondary-link" href="../Home/Home.html">Home</a>
-                <a class="secondary-link" href="Flags.html">View Flags</a>
+                <a class="secondary-link" href="../Home/Home">Home</a>
+                <a class="secondary-link" href="Flags">View Flags</a>
             </nav>
         </div>
 
@@ -39,6 +39,10 @@
                 </div>
 
                 <span class="selection-count" id="selectionCount">0 selected</span>
+            </div>
+
+            <div class="safeguard-strip" id="whatsappSafeguards">
+                Loading WhatsApp safeguards...
             </div>
 
             <label class="meeting-time-field" for="meetingTime">
@@ -95,6 +99,7 @@
     </div>
 
     <script type="module" src="WhatsappReminder.js"></script>
+    <script type="module" src="../Shared/Preload.js"></script>
 </body>
 
 </html>

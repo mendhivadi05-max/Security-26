@@ -18,7 +18,7 @@
                 <p class="eyebrow">Database Records</p>
                 <h1>Add New Volunteer</h1>
             </div>
-            <a class="secondary-link" href="../Home/Home.html">Back to Dashboard</a>
+            <a class="secondary-link" href="../Home/Home">Back to Dashboard</a>
         </header>
 
         <form class="volunteer-form" id="volunteerForm">
@@ -47,13 +47,29 @@
 
             <div class="form-grid">
                 <label>
-                    Course
-                    <input type="text" id="volunteerCourse" required placeholder="Course">
+                    Branch
+                    <select id="volunteerCourse" required>
+                        <option value="">Select branch</option>
+                        <option>B-Tech</option>
+                        <option>B-com</option>
+                        <option>BSc</option>
+                        <option value="__other">Other</option>
+                    </select>
+                </label>
+
+                <label id="customBranchLabel" hidden>
+                    Branch name
+                    <input type="text" id="customBranch" placeholder="Enter branch name" maxlength="80">
                 </label>
 
                 <label>
                     Batch
-                    <input type="text" id="volunteerBatch" required placeholder="Batch">
+                    <select id="volunteerBatch" required>
+                        <option value="">Select batch</option>
+                        <option>2024</option>
+                        <option>2025</option>
+                        <option>2026</option>
+                    </select>
                 </label>
             </div>
 
@@ -84,6 +100,7 @@
     </main>
 
     <script type="module" src="AddVolunteer.js"></script>
+    <script type="module" src="../Shared/Preload.js"></script>
 </body>
 
 </html>

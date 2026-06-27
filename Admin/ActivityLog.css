@@ -1,0 +1,138 @@
+body{
+    margin:0;
+    min-height:100vh;
+    padding:24px 0 40px;
+}
+
+.activity-shell{
+    display:grid;
+    gap:20px;
+}
+
+.activity-toolbar{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:14px;
+    padding:18px;
+    background:var(--paper);
+    border:4px solid var(--ink);
+    box-shadow:var(--shadow);
+}
+
+.activity-toolbar label{
+    display:grid;
+    gap:7px;
+    font-weight:900;
+}
+
+.activity-toolbar input,
+.activity-toolbar select{
+    min-height:44px;
+    padding:10px;
+    font-size:1rem;
+}
+
+.activity-summary{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+}
+
+.summary-tile{
+    padding:16px;
+    background:#fff;
+    border:4px solid var(--ink);
+    box-shadow:5px 5px 0 var(--ink);
+}
+
+.summary-tile span{
+    display:block;
+    color:#4b5563;
+    font-weight:900;
+}
+
+.summary-tile strong{
+    display:block;
+    margin-top:7px;
+    font-family:'Bangers',cursive;
+    font-size:2rem;
+    letter-spacing:1px;
+}
+
+.activity-list{
+    display:grid;
+    gap:13px;
+}
+
+.activity-item{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:14px;
+    padding:16px;
+    background:#fff;
+    border:4px solid var(--ink);
+    box-shadow:5px 5px 0 var(--ink);
+}
+
+.activity-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.activity-title strong{
+    font-size:1.05rem;
+}
+
+.action-badge{
+    display:inline-flex;
+    align-items:center;
+    min-height:28px;
+    padding:3px 9px;
+    border:3px solid var(--ink);
+    background:var(--yellow);
+    font-weight:900;
+}
+
+.activity-meta{
+    margin:8px 0 0;
+    color:#4b5563;
+    font-weight:700;
+}
+
+.activity-details{
+    margin:10px 0 0;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.detail-chip{
+    border:2px solid var(--ink);
+    background:var(--paper);
+    padding:4px 8px;
+    font-weight:700;
+}
+
+.activity-time{
+    justify-self:end;
+    text-align:right;
+    color:#374151;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+@media(max-width:780px){
+    .activity-toolbar,
+    .activity-summary,
+    .activity-item{
+        grid-template-columns:1fr;
+    }
+
+    .activity-time{
+        justify-self:start;
+        text-align:left;
+        white-space:normal;
+    }
+}

@@ -8,3 +8,4 @@ Database/auth.json
 .env.local
 
 .vercel
+dist/

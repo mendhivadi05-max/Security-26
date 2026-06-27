@@ -1,12 +1,5 @@
-import { db } from "../Firebase/Firebase.js";
 import { showSuccess, showErrorToast } from "../Shared/Toast.js";
-import { logClientAction } from "../Shared/ActionLog.js";
-import {
-    collection,
-    getDocs,
-    doc,
-    writeBatch
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { apiGet, apiPost, loadCollections } from "../Shared/Api.js";
 
 const memberReminderList = document.getElementById("memberReminderList");
 const selectionCount = document.getElementById("selectionCount");
@@ -16,6 +9,7 @@ const selectAllRemindersButton = document.getElementById("selectAllReminders");
 const saveSelectionButton = document.getElementById("saveReminderSelection");
 const sendRemindersButton = document.getElementById("sendWhatsAppReminders");
 const reminderResult = document.getElementById("reminderResult");
+const safeguardsPanel = document.getElementById("whatsappSafeguards");
 const sendConfirmModal = document.getElementById("sendConfirmModal");
 const sendConfirmSummary = document.getElementById("sendConfirmSummary");
 const sendConfirmRecipients = document.getElementById("sendConfirmRecipients");
@@ -33,6 +27,56 @@ const escapeHtml = value => (value || "")
 let reminderMembers = [];
 let pendingSendMemberIds = [];
 let lastFailedMemberIds = [];
+let prepareTimer = null;
+let prepareController = null;
+let latestPreparation = null;
+let diagnosticsReady = false;
+let readinessState = { message: "", tone: "neutral" };
+
+async function loadSafeguards() {
+    try {
+        const result = await apiGet("/api/whatsapp?action=safeguards");
+        const safeguards = result.safeguards || {};
+        safeguardsPanel.innerHTML = `
+            <span>Batch limit: <strong>${escapeHtml(safeguards.maxBatchSize)}</strong></span>
+            <span>Daily cap: <strong>${escapeHtml(safeguards.dailySendLimit)}</strong></span>
+            <span>Cooldown: <strong>${escapeHtml(safeguards.memberCooldownMinutes)} min</strong></span>
+        `;
+    }
+    catch (error) {
+        safeguardsPanel.textContent = error.message || "Could not load WhatsApp safeguards.";
+    }
+}
+
+function setReadiness(message, tone = "neutral") {
+    readinessState = { message, tone };
+}
+
+async function warmWhatsAppBackend() {
+    try {
+        const diagnostics = await apiGet("/api/whatsapp?action=diagnostics");
+        diagnosticsReady = true;
+
+        const missing = (diagnostics.environment || [])
+            .filter(item => !item.configured && [
+                "META_WHATSAPP_ACCESS_TOKEN",
+                "META_WHATSAPP_PHONE_NUMBER_ID",
+                "WHATSAPP_TEMPLATE_MEETING_REMINDER"
+            ].includes(item.name))
+            .map(item => item.name);
+
+        if (missing.length) {
+            setReadiness(`WhatsApp needs configuration: ${missing.join(", ")}.`, "warning");
+            return;
+        }
+
+        setReadiness("WhatsApp backend and templates are loaded.", "success");
+    }
+    catch (error) {
+        diagnosticsReady = false;
+        setReadiness(error.message || "Could not preload WhatsApp templates.", "warning");
+    }
+}
 
 function normalizedSearch(value) {
     return (value || "").toString().toLowerCase().replace(/[^\da-z]/g, "");
@@ -106,6 +150,7 @@ function selectEveryone() {
     }));
 
     renderReminderMembers();
+    scheduleReminderPreparation({ immediate: true });
     reminderResult.textContent = "Everyone with a WhatsApp number is selected.";
     showSuccess("Everyone with a WhatsApp number is selected.");
 }
@@ -114,69 +159,100 @@ function selectedMembers() {
     return reminderMembers.filter(member => member.sendReminder === true && memberPhone(member));
 }
 
-async function loadReminderMembers() {
-    const memberDocs = await getDocs(collection(db, "members"));
-    const normalizationBatch = writeBatch(db);
-    let needsNormalization = false;
+function selectedMemberIds() {
+    return selectedMembers().map(member => member.id);
+}
 
-    reminderMembers = memberDocs.docs.map(memberDoc => {
-        const member = { id: memberDoc.id, ...memberDoc.data() };
-        const normalizedPhone = memberPhone(member);
-        const missingFields =
-            typeof member.active !== "boolean" ||
-            typeof member.sendReminder !== "boolean" ||
-            !Object.hasOwn(member, "reminderStatus") ||
-            (normalizedPhone && !member.whatsappNumber);
+function scheduleReminderPreparation({ immediate = false } = {}) {
+    clearTimeout(prepareTimer);
+    prepareTimer = setTimeout(prepareSelectedReminders, immediate ? 0 : 450);
+}
 
-        if (missingFields) {
-            needsNormalization = true;
-            normalizationBatch.set(
-                memberDoc.ref,
-                {
-                    phone: member.phone || normalizedPhone,
-                    whatsappNumber: member.whatsappNumber || normalizedPhone,
-                    active: member.active !== false,
-                    sendReminder: member.sendReminder === true,
-                    lastReminderSentAt: member.lastReminderSentAt || null,
-                    reminderStatus: member.reminderStatus || "not_sent"
-                },
-                { merge: true }
-            );
-        }
+async function prepareSelectedReminders() {
+    const memberIds = selectedMemberIds();
+    const meetingTime = meetingTimeInput.value.trim();
 
-        return member;
-    });
-
-    if (needsNormalization) {
-        await normalizationBatch.commit();
+    if (!diagnosticsReady) {
+        setReadiness("Preparing WhatsApp backend...");
     }
 
+    if (!memberIds.length) {
+        latestPreparation = null;
+        setReadiness("Select members to prepare WhatsApp reminders.");
+        return;
+    }
+
+    if (prepareController) {
+        prepareController.abort();
+    }
+
+    prepareController = new AbortController();
+    setReadiness("Preparing selected WhatsApp reminders...");
+
+    try {
+        const response = await fetch("/api/whatsapp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            signal: prepareController.signal,
+            body: JSON.stringify({ action: "prepare-reminders", meetingTime, memberIds })
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(result.error || "Could not prepare reminders.");
+        }
+
+        latestPreparation = result;
+        if (!result.environmentReady) {
+            setReadiness("WhatsApp environment is incomplete. Check Vercel env vars.", "warning");
+            return;
+        }
+
+        if (!result.meetingTimeReady) {
+            setReadiness(`${result.readyCount} recipient${result.readyCount === 1 ? "" : "s"} prepared. Add meeting time before sending.`, "neutral");
+            return;
+        }
+
+        setReadiness(`${result.readyCount} recipient${result.readyCount === 1 ? "" : "s"} prepared for ${meetingTime}.`, "success");
+    }
+    catch (error) {
+        if (error.name === "AbortError") {
+            return;
+        }
+        latestPreparation = null;
+        setReadiness(error.message || "Could not prepare reminders.", "warning");
+    }
+}
+
+async function loadReminderMembers() {
+    const data = await loadCollections(["members"]);
+
+    reminderMembers = (data.members || []).map(member => ({
+        ...member,
+        active: member.active !== false,
+        sendReminder: member.sendReminder === true,
+        reminderStatus: member.reminderStatus || "not_sent"
+    }));
+
     renderReminderMembers();
+    scheduleReminderPreparation({ immediate: true });
 }
 
 async function saveReminderSelection({ silent = false } = {}) {
-    const batch = writeBatch(db);
-
-    reminderMembers.forEach(member => {
-        batch.set(
-            doc(db, "members", member.id),
-            {
-                active: member.sendReminder ? true : member.active !== false,
-                sendReminder: member.sendReminder === true,
-                reminderStatus: member.sendReminder ? "ready" : "not_selected"
-            },
-            { merge: true }
-        );
+    await apiPost("/api/data", {
+        action: "updateMemberReminderSelection",
+        members: reminderMembers.map(member => ({
+            id: member.id,
+            active: member.active !== false,
+            sendReminder: member.sendReminder === true
+        }))
     });
 
-    await batch.commit();
     if (!silent) {
         reminderResult.textContent = "Reminder selection saved.";
         showSuccess("Reminder selection saved.");
     }
-    await logClientAction("whatsapp_reminder_selection_saved", {
-        selectedCount: reminderMembers.filter(member => member.sendReminder === true).length
-    });
 }
 
 function renderSendResult(result, { allowRetry = true } = {}) {
@@ -212,10 +288,11 @@ function openSendConfirmation(memberIds) {
     const recipients = memberIds
         .map(memberId => reminderMembers.find(member => member.id === memberId))
         .filter(Boolean);
+    const prepared = latestPreparation?.readyCount ?? recipients.length;
 
     pendingSendMemberIds = memberIds;
     sendConfirmSummary.textContent =
-        `${recipients.length} recipient${recipients.length === 1 ? "" : "s"} will receive club_meeting_reminder for ${meetingTime}.`;
+        `${prepared} recipient${prepared === 1 ? "" : "s"} prepared for club_meeting_reminder at ${meetingTime}.`;
     sendConfirmRecipients.innerHTML = recipients.map(member => `
         <div class="confirm-recipient-row">
             <strong>${escapeHtml(member.name || "Unnamed")}</strong>
@@ -234,15 +311,17 @@ async function sendReminderBatch(memberIds, { allowRetry = true } = {}) {
 
     sendRemindersButton.disabled = true;
     saveSelectionButton.disabled = true;
+    confirmSendRemindersButton.disabled = true;
     reminderResult.textContent = "Sending reminders...";
 
     try {
-        const response = await fetch("/api/whatsapp/send-reminders", {
+        const response = await fetch("/api/whatsapp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ meetingTime, memberIds })
+            credentials: "same-origin",
+            body: JSON.stringify({ action: "send-reminders", meetingTime, memberIds })
         });
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok) {
             throw new Error(result.error || "Could not send WhatsApp reminders.");
         }
@@ -266,6 +345,7 @@ async function sendReminderBatch(memberIds, { allowRetry = true } = {}) {
     finally {
         sendRemindersButton.disabled = false;
         saveSelectionButton.disabled = false;
+        confirmSendRemindersButton.disabled = false;
     }
 }
 
@@ -287,6 +367,11 @@ async function confirmAndSendWhatsAppReminders() {
     }
 
     try {
+        await prepareSelectedReminders();
+        if (!latestPreparation?.environmentReady) {
+            showErrorToast("WhatsApp is not fully configured yet.");
+            return;
+        }
         await saveReminderSelection({ silent: true });
         openSendConfirmation(memberIds);
     }
@@ -303,6 +388,7 @@ memberReminderList.addEventListener("change", event => {
         if (member) {
             if (event.target.classList.contains("send-reminder-checkbox")) {
                 member.sendReminder = event.target.checked;
+                scheduleReminderPreparation();
             }
         }
     }
@@ -313,6 +399,10 @@ memberReminderList.addEventListener("change", event => {
 });
 
 reminderSearchInput.addEventListener("input", renderReminderMembers);
+
+meetingTimeInput.addEventListener("input", () => {
+    scheduleReminderPreparation();
+});
 
 selectAllRemindersButton.addEventListener("click", selectEveryone);
 
@@ -354,6 +444,9 @@ reminderResult.addEventListener("click", async event => {
 
     await sendReminderBatch(lastFailedMemberIds, { allowRetry: false });
 });
+
+loadSafeguards();
+warmWhatsAppBackend();
 
 loadReminderMembers().catch(error => {
     console.error("Member reminder load error:", error);

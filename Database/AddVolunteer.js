@@ -1,15 +1,17 @@
-import { db } from "../Firebase/Firebase.js";
 import { showSuccess, showErrorToast } from "../Shared/Toast.js";
-import { logClientAction } from "../Shared/ActionLog.js";
-
-import {
-    collection,
-    addDoc
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { apiPost, loadCollections } from "../Shared/Api.js";
 
 const form =
     document.getElementById("volunteerForm");
+
+const branchSelect =
+    document.getElementById("volunteerCourse");
+
+const customBranchLabel =
+    document.getElementById("customBranchLabel");
+
+const customBranchInput =
+    document.getElementById("customBranch");
 
 const imageInput =
     document.getElementById("volunteerImage");
@@ -18,6 +20,70 @@ const imagePreview =
     document.getElementById("imagePreview");
 
 let selectedImage = "";
+let knownBranches = [];
+
+const DEFAULT_BRANCHES = ["B-Tech", "B-com", "BSc"];
+const OTHER_BRANCH_VALUE = "__other";
+
+function branchNameFromMember(member) {
+    return (member.branch || member.course || member.profile?.branch || member.profile?.course || "")
+        .toString()
+        .trim();
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function setBranchOptions(branches = []) {
+    const selected = branchSelect.value;
+    knownBranches = [...new Set([...knownBranches, ...branches].filter(Boolean))];
+    const customBranches = knownBranches
+        .filter(branch => !DEFAULT_BRANCHES.includes(branch))
+        .sort((a, b) => a.localeCompare(b));
+    const options = [...DEFAULT_BRANCHES, ...customBranches];
+
+    branchSelect.innerHTML = [
+        '<option value="">Select branch</option>',
+        ...options.map(branch => `<option>${escapeHtml(branch)}</option>`),
+        `<option value="${OTHER_BRANCH_VALUE}">Other</option>`
+    ].join("");
+
+    if (selected && options.includes(selected)) {
+        branchSelect.value = selected;
+    }
+}
+
+function selectedBranch() {
+    return branchSelect.value === OTHER_BRANCH_VALUE
+        ? customBranchInput.value.trim()
+        : branchSelect.value;
+}
+
+function updateCustomBranchVisibility() {
+    const isOther = branchSelect.value === OTHER_BRANCH_VALUE;
+    customBranchLabel.hidden = !isOther;
+    customBranchInput.required = isOther;
+    if (!isOther) {
+        customBranchInput.value = "";
+    }
+}
+
+async function loadBranchOptions() {
+    try {
+        const data = await loadCollections(["members"]);
+        setBranchOptions((data.members || []).map(branchNameFromMember));
+    }
+    catch (error) {
+        console.error("Branch option load error:", error);
+        setBranchOptions();
+    }
+}
 
 function readImage(file) {
     return new Promise((resolve, reject) => {
@@ -71,7 +137,10 @@ form.addEventListener("reset", () => {
     selectedImage = "";
     imagePreview.textContent = "No image selected";
     imagePreview.style.backgroundImage = "";
+    setTimeout(updateCustomBranchVisibility, 0);
 });
+
+branchSelect.addEventListener("change", updateCustomBranchVisibility);
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -85,59 +154,38 @@ form.addEventListener("submit", async (event) => {
     const gender =
         document.getElementById("volunteerGender").value;
 
-    const course =
-        document.getElementById("volunteerCourse").value.trim();
+    const branch =
+        selectedBranch();
 
     const batch =
-        document.getElementById("volunteerBatch").value.trim();
+        document.getElementById("volunteerBatch").value;
 
     const whatsappNumber =
         document.getElementById("volunteerWhatsapp").value.trim();
 
-    if (!name || !dateOfBirth || !gender || !course || !batch || !whatsappNumber) {
+    if (!name || !dateOfBirth || !branch || !gender || !batch || !whatsappNumber) {
         showErrorToast("Please fill all required volunteer details.");
         return;
     }
 
     try {
-        const createdAt = Date.now();
-
-        const memberRef = await addDoc(
-            collection(db, "members"),
-            {
+        const result = await apiPost("/api/data", {
+            action: "createMember",
+            member: {
                 name,
                 dateOfBirth,
                 gender,
-                course,
+                course: branch,
+                branch,
                 batch,
                 whatsappNumber,
-                image: selectedImage,
-                createdAt,
-                profile: {
-                    name,
-                    dateOfBirth,
-                    gender,
-                    course,
-                    batch,
-                    image: selectedImage
-                },
-                contact: {
-                    whatsappNumber
-                },
-                metadata: {
-                    createdAt,
-                    updatedAt: createdAt,
-                    schemaVersion: 2
-                }
+                image: selectedImage
             }
-        );
+        });
 
         showSuccess("Volunteer added successfully.");
-        await logClientAction("volunteer_created", {
-            memberId: memberRef.id,
-            name,
-            whatsappNumber
-        });
+        console.info("Volunteer created:", result.id);
+        setBranchOptions([branch]);
         form.reset();
     }
     catch (error) {
@@ -145,3 +193,6 @@ form.addEventListener("submit", async (event) => {
         showErrorToast("Error saving volunteer.");
     }
 });
+
+loadBranchOptions();
+updateCustomBranchVisibility();

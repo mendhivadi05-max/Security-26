@@ -41,16 +41,14 @@ button,.primary-btn,.secondary-btn,.secondary-link,.back-button,#saveAttendance{
     border-radius:0!important;
     box-shadow:4px 4px 0 var(--ink)!important;
     font-weight:700!important;
-    transition:transform .12s,box-shadow .12s;
+    transition:box-shadow .12s;
 }
 
 button:hover,.primary-btn:hover,.secondary-btn:hover,.secondary-link:hover,.back-button:hover,#saveAttendance:hover{
-    transform:translate(-2px,-2px);
     box-shadow:6px 6px 0 var(--ink)!important;
 }
 
 button:active,.primary-btn:active,.secondary-btn:active,.secondary-link:active,.back-button:active,#saveAttendance:active{
-    transform:translate(2px,2px);
     box-shadow:2px 2px 0 var(--ink)!important;
 }
 
@@ -223,5 +221,92 @@ input:focus,select:focus,textarea:focus{
     .page-nav > *{
         flex:1;
         min-height:44px;
+    }
+}
+
+@media(max-width:520px){
+    :root{
+        --shadow:4px 4px 0 var(--ink);
+        --shadow-lg:5px 5px 0 var(--ink);
+    }
+
+    body{
+        background-size:20px 20px;
+    }
+
+    h1{
+        font-size:2.15rem;
+        line-height:1;
+    }
+
+    h2{
+        font-size:1.65rem;
+    }
+
+    h3{
+        font-size:1.25rem;
+    }
+
+    button,
+    .primary-btn,
+    .secondary-btn,
+    .secondary-link,
+    .back-button,
+    #saveAttendance{
+        min-height:44px;
+        padding:10px 12px!important;
+        box-shadow:3px 3px 0 var(--ink)!important;
+    }
+
+    button:hover,
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .secondary-link:hover,
+    .back-button:hover,
+    #saveAttendance:hover{
+        box-shadow:4px 4px 0 var(--ink)!important;
+    }
+
+    input,
+    select,
+    textarea{
+        min-height:44px;
+        font-size:16px!important;
+    }
+
+    .modal-overlay,
+    .flag-dialog{
+        padding:10px;
+        align-items:flex-end!important;
+        place-items:end center;
+    }
+
+    .modal-content,
+    .choice-modal,
+    .flag-dialog-card{
+        width:100%!important;
+        max-width:none!important;
+        max-height:calc(100svh - 20px)!important;
+        padding:18px!important;
+        box-shadow:5px 5px 0 var(--ink)!important;
+    }
+
+    .page-header{
+        padding:16px;
+        box-shadow:5px 5px 0 var(--ink);
+    }
+
+    .page-actions,
+    .page-nav,
+    .flag-dialog-actions{
+        display:grid;
+        grid-template-columns:1fr;
+        width:100%;
+    }
+
+    .toast-root{
+        right:10px;
+        bottom:10px;
+        width:calc(100vw - 20px);
     }
 }

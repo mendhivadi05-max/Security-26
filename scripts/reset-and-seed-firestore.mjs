@@ -1,5 +1,9 @@
-const projectId = "clubdeskin";
-const apiKey = "AIzaSyDW2tNJCiXLEEUirjEzxHUaBQL6026KcGY";
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const apiKey = process.env.FIREBASE_API_KEY;
+
+if (!projectId || !apiKey) {
+  throw new Error("FIREBASE_PROJECT_ID and FIREBASE_API_KEY must be set before running this script.");
+}
 const root = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents`;
 const collections = ["attendance", "sessions", "memberNotes", "flags", "members"];
 

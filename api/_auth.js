@@ -1,8 +1,40 @@
+const crypto = require("crypto");
+
+const VERIFY_CACHE_MS = 5 * 60 * 1000;
+const VERIFY_CACHE_MAX = 250;
+const verifiedTokenCache = new Map();
+
 function firebaseApiKey() {
     if (!process.env.FIREBASE_API_KEY) {
         throw new Error("FIREBASE_API_KEY is not configured.");
     }
     return process.env.FIREBASE_API_KEY;
+}
+
+function tokenCacheKey(idToken) {
+    return crypto.createHash("sha256").update(idToken).digest("hex");
+}
+
+function cachedVerifiedUser(idToken) {
+    const key = tokenCacheKey(idToken);
+    const cached = verifiedTokenCache.get(key);
+    if (!cached || cached.expiresAt <= Date.now()) {
+        verifiedTokenCache.delete(key);
+        return null;
+    }
+    return cached.user;
+}
+
+function cacheVerifiedUser(idToken, user) {
+    const key = tokenCacheKey(idToken);
+    verifiedTokenCache.set(key, {
+        user,
+        expiresAt: Date.now() + VERIFY_CACHE_MS
+    });
+
+    if (verifiedTokenCache.size > VERIFY_CACHE_MAX) {
+        verifiedTokenCache.delete(verifiedTokenCache.keys().next().value);
+    }
 }
 
 function parseCookies(request) {
@@ -107,6 +139,11 @@ async function verifyFirebaseToken(idToken) {
         return null;
     }
 
+    const cached = cachedVerifiedUser(idToken);
+    if (cached) {
+        return cached;
+    }
+
     const response = await fetch(
         `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseApiKey()}`,
         {
@@ -116,7 +153,11 @@ async function verifyFirebaseToken(idToken) {
         }
     );
     const result = await response.json();
-    return response.ok ? result.users?.[0] || null : null;
+    const user = response.ok ? result.users?.[0] || null : null;
+    if (user) {
+        cacheVerifiedUser(idToken, user);
+    }
+    return user;
 }
 
 module.exports = {

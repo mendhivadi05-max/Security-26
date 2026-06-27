@@ -1,14 +1,5 @@
-import { db } from "../Firebase/Firebase.js";
 import { showSuccess, showErrorToast } from "../Shared/Toast.js";
-import { logClientAction } from "../Shared/ActionLog.js";
-
-import {
-    collection,
-    getDocs,
-    deleteDoc,
-    doc
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { apiPost, loadCollections } from "../Shared/Api.js";
 
 const recordsContainer =
     document.getElementById("recordsContainer");
@@ -45,19 +36,8 @@ async function loadMeetings() {
     recordsContainer.innerHTML = "";
 
     try {
-        const querySnapshot =
-            await getDocs(
-                collection(db, "sessions")
-            );
-
-        const sessions = [];
-
-        querySnapshot.forEach((sessionDoc) => {
-            sessions.push({
-                id: sessionDoc.id,
-                ...sessionDoc.data()
-            });
-        });
+        const data = await loadCollections(["sessions"]);
+        const sessions = data.sessions || [];
 
         sessions.sort((a, b) =>
             (b.createdAt || 0) - (a.createdAt || 0)
@@ -116,12 +96,12 @@ async function loadMeetings() {
 
 window.viewAttendance = function (sessionId) {
     window.location.href =
-        `../Attendance/AddAttendance.html?sessionId=${sessionId}&mode=view`;
+        `../Attendance/AddAttendance?sessionId=${sessionId}&mode=view`;
 };
 
 window.updateAttendance = function (sessionId) {
     window.location.href =
-        `../Attendance/AddAttendance.html?sessionId=${sessionId}&mode=edit`;
+        `../Attendance/AddAttendance?sessionId=${sessionId}&mode=edit`;
 };
 
 window.deleteMeeting = async function (sessionId) {
@@ -133,16 +113,12 @@ window.deleteMeeting = async function (sessionId) {
     }
 
     try {
-        await deleteDoc(
-            doc(
-                db,
-                "sessions",
-                sessionId
-            )
-        );
+        await apiPost("/api/data", {
+            action: "deleteSession",
+            sessionId
+        });
 
         showSuccess("Meeting deleted successfully.");
-        await logClientAction("meeting_deleted", { sessionId });
         loadMeetings();
     }
     catch (error) {

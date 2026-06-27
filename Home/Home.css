@@ -74,7 +74,7 @@ body{
     width:49%;
     display:grid;
     grid-template-columns:1fr 1fr;
-    grid-template-rows:repeat(2,minmax(150px,1fr));
+    grid-template-rows:repeat(3,minmax(130px,1fr));
     gap:15px;
 }
 
@@ -499,8 +499,8 @@ body{
 .logout-btn{background:#ff5b5b;color:#111}
 .left-panel{gap:22px}
 .log-box{border:5px solid #111;border-radius:0;box-shadow:8px 8px 0 #111;color:#111;font-family:'Bangers',cursive;font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:1.5px;background:#ffb3c7}
-.log-box:nth-child(2){background:#a9d6ff}.log-box:nth-child(3){background:#a0ff9f}.log-box:nth-child(4){background:#ffe45c}
-.log-box:hover{background:#ffe45c;transform:translate(-3px,-3px);box-shadow:11px 11px 0 #111}
+.log-box:nth-child(2){background:#a9d6ff}.log-box:nth-child(3){background:#a0ff9f}.log-box:nth-child(4){background:#ffe45c}.log-box:nth-child(5){background:#fffdf8}
+.log-box:hover{background:#ffe45c;box-shadow:11px 11px 0 #111}
 .right-panel{background:#fffdf8;border:5px solid #111;border-radius:0;box-shadow:8px 8px 0 #111}
 .calendar-header span{font-family:'Bangers',cursive;font-size:1.7rem;letter-spacing:1px}
 .calendar-header button{background:#a9d6ff;padding:6px 10px}
@@ -512,4 +512,183 @@ body{
     .user-greeting{display:none}
     .left-panel{grid-template-columns:1fr}
     .header-right{min-width:120px}
+}
+
+@media(min-width:769px){
+    body{
+        padding:24px clamp(24px,4vw,56px);
+    }
+
+    .dashboard-container{
+        align-items:stretch;
+    }
+
+    .left-panel{
+        grid-template-rows:repeat(2,minmax(170px,1fr));
+    }
+}
+
+@media(max-width:520px){
+    body{
+        padding:10px;
+        gap:10px;
+        overflow-x:hidden;
+    }
+
+    .header{
+        grid-template-columns:auto 1fr auto;
+        display:grid;
+        gap:8px;
+        padding:8px 10px;
+        margin-bottom:12px;
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+    }
+
+    .header-left,
+    .header-center,
+    .header-right{
+        min-width:0;
+    }
+
+    .header-center{
+        display:flex;
+        justify-content:center;
+    }
+
+    .header-center h1{
+        display:block;
+        font-size:1.75rem;
+        letter-spacing:1px;
+        text-align:center;
+        overflow-wrap:anywhere;
+    }
+
+    .mobile-title{
+        display:none;
+    }
+
+    .logo{
+        height:46px;
+        width:46px;
+        object-fit:contain;
+    }
+
+    .header-right{
+        justify-content:flex-end;
+        min-width:0;
+        gap:0;
+    }
+
+    .logout-btn{
+        padding:7px 9px!important;
+        min-height:38px;
+        font-size:.88rem;
+        white-space:nowrap;
+    }
+
+    .dashboard-container{
+        gap:14px;
+    }
+
+    .left-panel{
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:none;
+        gap:10px;
+    }
+
+    .log-box{
+        min-height:86px;
+        padding:12px 8px;
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+        font-size:clamp(1.15rem,7vw,1.55rem);
+        line-height:1;
+        letter-spacing:.8px;
+    }
+
+    .log-box:hover{
+        box-shadow:5px 5px 0 #111;
+    }
+
+    .right-side-wrapper{
+        gap:10px;
+    }
+
+    .right-panel{
+        padding:10px;
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+    }
+
+    .calendar-header{
+        margin-bottom:8px;
+    }
+
+    .calendar-header span{
+        font-size:1.28rem;
+        text-align:center;
+    }
+
+    .calendar-header button{
+        min-width:38px;
+        min-height:34px;
+        padding:4px 8px!important;
+    }
+
+    .calendar-grid{
+        gap:3px;
+    }
+
+    .calendar-day{
+        min-height:42px;
+        padding-top:4px;
+        font-size:.86rem;
+        border:1px solid rgba(17,17,17,.18);
+        background:#fff;
+    }
+
+    .task-dot{
+        width:5px;
+        height:5px;
+    }
+
+    .legend-container{
+        padding:9px;
+        border-width:3px;
+        box-shadow:4px 4px 0 #111;
+    }
+
+    .legend-items{
+        gap:6px;
+    }
+
+    .legend-item{
+        font-size:.72rem;
+        padding:4px 6px;
+    }
+
+    .database-records-modal{
+        width:100%;
+    }
+
+    .database-choice-list a{
+        padding:10px;
+        min-height:48px;
+    }
+
+    .database-choice-list a span{
+        width:26px;
+        height:26px;
+    }
+
+    .default-attendance-row{
+        align-items:flex-start;
+        display:grid;
+        grid-template-columns:1fr auto;
+    }
+
+    .modal-actions{
+        display:grid;
+    }
 }

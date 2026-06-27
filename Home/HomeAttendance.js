@@ -1,12 +1,5 @@
-import { db } from "../Firebase/Firebase.js";
 import { showErrorToast } from "../Shared/Toast.js";
-import { logClientAction } from "../Shared/ActionLog.js";
-
-import {
-    collection,
-    addDoc
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { apiPost } from "../Shared/Api.js";
 
 const attendanceTile =
     document.getElementById("addAttendanceTile");
@@ -77,35 +70,21 @@ attendanceForm.addEventListener("submit", async (event) => {
     }
 
     try {
-        const sessionRef =
-            await addDoc(
-                collection(db, "sessions"),
-                {
+        const result =
+            await apiPost("/api/data", {
+                action: "createSession",
+                session: {
                     title,
                     hostedBy,
                     venue,
                     time,
                     note,
-                    defaultStatus,
-                    date: new Date().toISOString().split("T")[0],
-                    locked: false,
-                    createdAt: Date.now()
+                    defaultStatus
                 }
-            );
-
-        logClientAction("attendance_session_created", {
-            sessionId: sessionRef.id,
-            title,
-            hostedBy,
-            venue,
-            time,
-            defaultStatus
-        }).catch(error => {
-            console.warn("Could not log attendance session creation:", error);
-        });
+            });
 
         window.location.href =
-            `../Attendance/AddAttendance.html?sessionId=${sessionRef.id}`;
+            `../Attendance/AddAttendance?sessionId=${result.id}`;
     }
     catch (error) {
         console.error("Attendance setup error:", error);

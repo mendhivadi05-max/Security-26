@@ -33,7 +33,7 @@ async function logout(){
         // Clear the visible browser state even if the server is already offline.
     }
     sessionStorage.clear();
-    window.location.href = "../Auth/Auth.html";
+    window.location.href = "../Auth/Auth";
 }
 
 function openModal(id){
@@ -61,9 +61,9 @@ function initializeCategories(){
             <div class="legend-item">
                 <div
                     class="legend-swatch"
-                    style="background:${cat.color}">
+                    style="background:${safeColor(cat.color)}">
                 </div>
-                ${cat.name}
+                ${escapeHomeHtml(cat.name)}
                 <button
                     class="remove-cat-btn"
                     onclick="deleteCat(${index})">
@@ -73,8 +73,8 @@ function initializeCategories(){
         `;
 
         select.innerHTML += `
-            <option value="${cat.color}">
-                ${cat.name}
+            <option value="${safeColor(cat.color)}">
+                ${escapeHomeHtml(cat.name)}
             </option>
         `;
     });
@@ -186,7 +186,7 @@ function renderCalendar(){
             dots += `
                 <div
                     class="task-dot"
-                    style="background:${task.color}">
+                    style="background:${safeColor(task.color)}">
                 </div>
             `;
         });
@@ -247,7 +247,7 @@ function renderTaskList(){
                 <li class="task-item birthday-item">
                     <span>
                         <strong>${escapeHomeHtml(person.name)}'s birthday</strong>
-                        <small>${escapeHomeHtml(person.course)} - ${escapeHomeHtml(person.batch)}</small>
+                        <small>${escapeHomeHtml(person.branch || person.course)} - ${escapeHomeHtml(person.batch)}</small>
                     </span>
                 </li>
             `;
@@ -259,9 +259,9 @@ function renderTaskList(){
         list.innerHTML += `
             <li
                 class="task-item"
-                style="border-left-color:${task.color}">
+                style="border-left-color:${safeColor(task.color)}">
 
-                ${task.text}
+                ${escapeHomeHtml(task.text)}
 
                 <button
                     onclick="deleteTask(${index})">
@@ -281,6 +281,11 @@ function escapeHomeHtml(value){
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function safeColor(value){
+    const color = (value || "").toString().trim();
+    return /^#[0-9a-f]{6}$/i.test(color) ? color : "#3498db";
 }
 
 function addNewTask(){
@@ -369,8 +374,8 @@ dashboardInsightSearch.addEventListener("submit", event => {
 
     window.location.href =
         query
-            ? `../Database/BrowseStatistics.html?q=${encodeURIComponent(query)}`
-            : "../Database/BrowseStatistics.html";
+            ? `../Database/BrowseStatistics?q=${encodeURIComponent(query)}`
+            : "../Database/BrowseStatistics";
 });
 
 whatsappTile.addEventListener("click", event => {

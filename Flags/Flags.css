@@ -219,6 +219,37 @@ body{margin:0;padding:28px 0}
 .flag-kicker{margin:0;color:#ff4d00;font-weight:700;text-transform:uppercase}
 .flag-badge{background:#ff5b5b;border:3px solid #111;padding:6px 9px;font-weight:900}
 .flag-reason{background:#fff0f0;border:3px solid #111;padding:12px}
+.flag-reply{
+    display:grid;
+    gap:6px;
+    margin:12px 0;
+    padding:12px;
+    border:3px solid #111;
+    background:#eefdf3;
+}
+.flag-reply strong{
+    color:#166534;
+}
+.flag-reply p{
+    margin:0;
+    overflow-wrap:anywhere;
+}
+.flag-reply small{
+    color:#4b5563;
+    font-weight:700;
+}
+.flag-reply-status{
+    margin:10px 0;
+    padding:10px 12px;
+    border:3px solid #111;
+    background:#dbeafe;
+    color:#1e3a8a;
+    font-weight:800;
+}
+.flag-reply-status.is-expired{
+    background:#f3f4f6;
+    color:#4b5563;
+}
 .flag-card-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
 .remove-flag-button{background:#7f1d1d;color:#fff;border:3px solid #111;padding:8px 13px;font:inherit;font-weight:700;cursor:pointer}
 
@@ -265,6 +296,36 @@ body{margin:0;padding:28px 0}
     box-shadow:4px 4px 0 #111;
     font-weight:900;
     text-align:center;
+}
+
+.safeguard-strip{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:16px 0;
+    padding:12px;
+    border:3px solid #111;
+    background:#a9d6ff;
+    font-weight:900;
+}
+
+.safeguard-strip span{
+    display:inline-flex;
+    gap:4px;
+    align-items:center;
+}
+
+.whatsapp-ready-strip{
+    margin-top:-6px;
+    background:#fffdf8;
+}
+
+.whatsapp-ready-strip[data-tone="success"]{
+    background:#a0ff9f;
+}
+
+.whatsapp-ready-strip[data-tone="warning"]{
+    background:#ffb3c7;
 }
 
 .meeting-time-field{
@@ -326,7 +387,6 @@ body{margin:0;padding:28px 0}
 .save-selection-button:hover,
 .send-reminders-button:hover,
 .retry-failed-button:hover{
-    transform:translate(-2px,-2px);
     box-shadow:5px 5px 0 #111;
 }
 
@@ -415,7 +475,7 @@ body{margin:0;padding:28px 0}
     font-weight:900;
     cursor:pointer;
     box-shadow:3px 3px 0 #111;
-    transition:transform .12s ease,box-shadow .12s ease;
+    transition:box-shadow .12s ease;
 }
 
 .save-selection-button{
@@ -614,5 +674,105 @@ body{margin:0;padding:28px 0}
 
     .confirm-recipient-row span{
         white-space:normal;
+    }
+}
+
+@media(max-width:520px){
+    body{
+        padding:10px 0;
+        overflow-x:hidden;
+    }
+
+    .container{
+        width:calc(100% - 18px);
+    }
+
+    .header{
+        display:grid;
+        grid-template-columns:1fr;
+        padding:14px;
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+        gap:12px;
+    }
+
+    .header h1{
+        font-size:2rem;
+        line-height:1;
+    }
+
+    .page-nav{
+        display:grid;
+        grid-template-columns:1fr;
+        width:100%;
+    }
+
+    .legend,
+    .flag-card,
+    .reminder-panel{
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+        padding:14px;
+    }
+
+    .member-name{
+        font-size:1.35rem;
+    }
+
+    .member-status{
+        font-size:1rem;
+    }
+
+    .flag-card-top,
+    .reminder-heading{
+        display:grid;
+        gap:10px;
+    }
+
+    .flag-badge,
+    .selection-count{
+        justify-self:start;
+    }
+
+    .flag-card-actions{
+        display:grid;
+        grid-template-columns:1fr;
+    }
+
+    .flag-card-actions button,
+    .contact-button,
+    .remove-flag-button,
+    .retry-failed-button{
+        width:100%;
+        min-height:44px;
+    }
+
+    .reminder-list{
+        gap:10px;
+    }
+
+    .reminder-member{
+        grid-template-columns:1fr;
+        padding:12px;
+    }
+
+    .member-option{
+        justify-self:stretch;
+    }
+
+    .member-option input{
+        width:100%;
+    }
+
+    #sendConfirmModal{
+        align-items:flex-end;
+        padding:10px;
+    }
+
+    #sendConfirmModal .send-confirm-modal{
+        width:100%;
+        max-height:calc(100svh - 20px);
+        padding:16px;
+        box-shadow:5px 5px 0 #111;
     }
 }

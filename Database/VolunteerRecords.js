@@ -1,16 +1,4 @@
-import { db } from "../Firebase/Firebase.js";
-
-import {
-    collection,
-    getDocs,
-    doc,
-    setDoc,
-    updateDoc,
-    deleteField,
-    writeBatch,
-    FieldPath
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { apiPost, loadCollections } from "../Shared/Api.js";
 
 const searchInput =
     document.getElementById("volunteerSearch");
@@ -28,6 +16,55 @@ let flagsByMember = {};
 let notesByMember = {};
 let selectedVolunteerId = "";
 let editedVolunteerImage = "";
+
+const DEFAULT_BRANCHES = ["B-Tech", "B-com", "BSc"];
+const OTHER_BRANCH_VALUE = "__other";
+
+function branchName(volunteer) {
+    return (volunteer?.branch || volunteer?.course || volunteer?.profile?.branch || volunteer?.profile?.course || "")
+        .toString()
+        .trim();
+}
+
+function branchOptionsMarkup(selectedBranch = "") {
+    const knownBranches = [...new Set(volunteers.map(branchName).filter(Boolean))];
+    const customBranches = knownBranches
+        .filter(branch => !DEFAULT_BRANCHES.includes(branch))
+        .sort((a, b) => a.localeCompare(b));
+    const options = [...DEFAULT_BRANCHES, ...customBranches];
+    const hasSelected = selectedBranch && !options.includes(selectedBranch);
+
+    return [
+        '<option value="">Select branch</option>',
+        ...options.map(branch => `<option ${branch === selectedBranch ? "selected" : ""}>${escapeHtml(branch)}</option>`),
+        hasSelected ? `<option selected>${escapeHtml(selectedBranch)}</option>` : "",
+        `<option value="${OTHER_BRANCH_VALUE}">Other</option>`
+    ].join("");
+}
+
+function updateEditCustomBranchVisibility() {
+    const select = document.getElementById("editVolunteerCourse");
+    const label = document.getElementById("editCustomBranchLabel");
+    const input = document.getElementById("editCustomBranch");
+    if (!select || !label || !input) {
+        return;
+    }
+
+    const isOther = select.value === OTHER_BRANCH_VALUE;
+    label.hidden = !isOther;
+    input.required = isOther;
+    if (!isOther) {
+        input.value = "";
+    }
+}
+
+function selectedEditBranch() {
+    const select = document.getElementById("editVolunteerCourse");
+    const custom = document.getElementById("editCustomBranch");
+    return select.value === OTHER_BRANCH_VALUE
+        ? custom.value.trim()
+        : select.value;
+}
 
 function initials(name) {
     return (name || "?")
@@ -80,8 +117,8 @@ function getMatches(term) {
             const name =
                 normalize(volunteer.name);
 
-            const course =
-                normalize(volunteer.course);
+            const branch =
+                normalize(volunteer.branch || volunteer.course);
 
             const batch =
                 normalize(volunteer.batch);
@@ -89,7 +126,7 @@ function getMatches(term) {
             return (
                 name.startsWith(query) ||
                 name.includes(query) ||
-                course.includes(query) ||
+                branch.includes(query) ||
                 batch.includes(query)
             );
         })
@@ -115,7 +152,7 @@ function renderResults(matches) {
                     ${avatarMarkup(volunteer)}
                     <span>
                         <strong>${escapeHtml(volunteer.name || "Unnamed")}</strong>
-                        <small>${escapeHtml(volunteer.course || "No course")} - ${escapeHtml(volunteer.batch || "No batch")}</small>
+                        <small>${escapeHtml(volunteer.branch || volunteer.course || "No branch")} - ${escapeHtml(volunteer.batch || "No batch")}</small>
                     </span>
                     ${notesByMember[volunteer.id]?.length ? '<span class="alert-mark">!</span>' : ""}
                 </button>
@@ -227,7 +264,16 @@ function renderVolunteer(volunteer) {
         flagsByMember[volunteer.id] || {};
 
     const flagged =
-        Boolean(flag.manualFlag || flag.contactedAtStreak);
+        Boolean(flag.manualFlag || flag.contactedAtStreak || flag.absenceReason);
+
+    const absenceReasonAt =
+        Number(flag.absenceReasonAt || 0);
+    const replyExpiresAt =
+        Number(flag.reasonReplyExpiresAt || 0);
+    const replyWindowOpen =
+        flag.reasonReplyOpen === true && replyExpiresAt > Date.now();
+    const replyWindowExpired =
+        flag.reasonReplyOpen === true && replyExpiresAt <= Date.now();
 
     recordDetail.innerHTML = `
         <article class="profile-card">
@@ -238,7 +284,7 @@ function renderVolunteer(volunteer) {
                     <dl class="detail-list">
                         <div><dt>Date of Birth</dt><dd>${escapeHtml(volunteer.dateOfBirth || "Not provided")}</dd></div>
                         <div><dt>Gender</dt><dd>${escapeHtml(volunteer.gender || "Not provided")}</dd></div>
-                        <div><dt>Course</dt><dd>${escapeHtml(volunteer.course || "Not provided")}</dd></div>
+                        <div><dt>Branch</dt><dd>${escapeHtml(volunteer.branch || volunteer.course || "Not provided")}</dd></div>
                         <div><dt>Batch</dt><dd>${escapeHtml(volunteer.batch || "Not provided")}</dd></div>
                     </dl>
                 </div>
@@ -253,6 +299,25 @@ function renderVolunteer(volunteer) {
                 <details class="profile-flag-notice">
                     <summary><span class="profile-alert">!</span> This volunteer has a flag</summary>
                     <p>${escapeHtml(flag.manualFlag ? (flag.reason || "Flagged for attention") : "Attendance requires attention.")}</p>
+                    ${flag.absenceReason ? `
+                        <div class="profile-reason-reply">
+                            <strong>WhatsApp reason received</strong>
+                            <span>${escapeHtml(flag.absenceReason)}</span>
+                            ${absenceReasonAt ? `<small>${escapeHtml(new Date(absenceReasonAt).toLocaleString())}</small>` : ""}
+                        </div>
+                    ` : ""}
+                    ${!flag.absenceReason && replyWindowOpen ? `
+                        <div class="profile-reason-reply is-pending">
+                            <strong>Reason reply window open</strong>
+                            <span>Expires ${escapeHtml(new Date(replyExpiresAt).toLocaleString())}</span>
+                        </div>
+                    ` : ""}
+                    ${!flag.absenceReason && replyWindowExpired ? `
+                        <div class="profile-reason-reply is-expired">
+                            <strong>Reason reply window expired</strong>
+                            <span>No reason was saved.</span>
+                        </div>
+                    ` : ""}
                 </details>
             ` : ""}
 
@@ -340,8 +405,20 @@ function ensureEditVolunteerDialog() {
                     </label>
                 </div>
                 <div class="form-grid">
-                    <label>Course<input type="text" id="editVolunteerCourse" required></label>
-                    <label>Batch<input type="text" id="editVolunteerBatch" required></label>
+                    <label>Branch
+                        <select id="editVolunteerCourse" required>
+                            ${branchOptionsMarkup()}
+                        </select>
+                    </label>
+                    <label id="editCustomBranchLabel" hidden>Branch name<input type="text" id="editCustomBranch" maxlength="80" placeholder="Enter branch name"></label>
+                    <label>Batch
+                        <select id="editVolunteerBatch" required>
+                            <option value="">Select batch</option>
+                            <option>2024</option>
+                            <option>2025</option>
+                            <option>2026</option>
+                        </select>
+                    </label>
                 </div>
                 <label>WhatsApp Number<input type="tel" id="editVolunteerWhatsapp" inputmode="tel" required></label>
                 <label>Volunteer Image<input type="file" id="editVolunteerImage" accept="image/*"></label>
@@ -359,6 +436,7 @@ function ensureEditVolunteerDialog() {
         () => document.getElementById("editVolunteerDialog").classList.remove("is-visible");
     document.getElementById("editVolunteerForm").onsubmit = saveVolunteerDetails;
     document.getElementById("editVolunteerImage").onchange = updateEditedVolunteerImage;
+    document.getElementById("editVolunteerCourse").onchange = updateEditCustomBranchVisibility;
     document.getElementById("removeVolunteerImage").onclick = () => {
         editedVolunteerImage = "";
         document.getElementById("editVolunteerImage").value = "";
@@ -372,7 +450,9 @@ function openEditVolunteerDialog(volunteer) {
     document.getElementById("editVolunteerName").value = volunteer.name || "";
     document.getElementById("editVolunteerDob").value = volunteer.dateOfBirth || "";
     document.getElementById("editVolunteerGender").value = volunteer.gender || "";
-    document.getElementById("editVolunteerCourse").value = volunteer.course || "";
+    document.getElementById("editVolunteerCourse").innerHTML = branchOptionsMarkup(branchName(volunteer));
+    document.getElementById("editCustomBranch").value = "";
+    updateEditCustomBranchVisibility();
     document.getElementById("editVolunteerBatch").value = volunteer.batch || "";
     document.getElementById("editVolunteerWhatsapp").value = volunteer.whatsappNumber || volunteer.phone || "";
     document.getElementById("editVolunteerImage").value = "";
@@ -424,29 +504,40 @@ async function saveVolunteerDetails(event) {
     const name = document.getElementById("editVolunteerName").value.trim();
     const dateOfBirth = document.getElementById("editVolunteerDob").value;
     const gender = document.getElementById("editVolunteerGender").value;
-    const course = document.getElementById("editVolunteerCourse").value.trim();
-    const batch = document.getElementById("editVolunteerBatch").value.trim();
+    const branch = selectedEditBranch();
+    const batch = document.getElementById("editVolunteerBatch").value;
     const whatsappNumber = document.getElementById("editVolunteerWhatsapp").value.trim();
     const updatedAt = Date.now();
     const volunteer = volunteers.find(item => item.id === selectedVolunteerId);
     const createdAt = volunteer.createdAt || volunteer.metadata?.createdAt || updatedAt;
 
+    if (!name || !dateOfBirth || !gender || !branch || !batch || !whatsappNumber) {
+        alert("Please fill all required volunteer details.");
+        return;
+    }
+
     const updates = {
         name,
         dateOfBirth,
         gender,
-        course,
+        course: branch,
+        branch,
         batch,
         whatsappNumber,
         image: editedVolunteerImage,
         updatedAt,
-        profile: { name, dateOfBirth, gender, course, batch, image: editedVolunteerImage },
+        profile: { name, dateOfBirth, gender, course: branch, branch, batch, image: editedVolunteerImage },
         contact: { whatsappNumber },
         metadata: { createdAt, updatedAt, schemaVersion: 2 }
     };
 
     try {
-        await updateDoc(doc(db, "members", selectedVolunteerId), updates);
+        const result = await apiPost("/api/data", {
+            action: "updateMember",
+            memberId: selectedVolunteerId,
+            member: updates
+        });
+        Object.assign(updates, result.member || {});
         Object.assign(volunteer, updates);
         document.getElementById("editVolunteerDialog").classList.remove("is-visible");
         renderVolunteer(volunteer);
@@ -466,32 +557,10 @@ async function deleteVolunteer(volunteer) {
     if (!confirmed) return;
 
     try {
-        const batch = writeBatch(db);
-        batch.delete(doc(db, "members", volunteer.id));
-        batch.delete(doc(db, "memberNotes", volunteer.id));
-        batch.delete(doc(db, "flags", volunteer.id));
-
-        const attendanceSnapshot = await getDocs(collection(db, "attendance"));
-        attendanceSnapshot.forEach(attendanceDoc => {
-            const data = attendanceDoc.data();
-
-            if (data.records && Object.hasOwn(data.records, volunteer.id)) {
-                batch.update(
-                    attendanceDoc.ref,
-                    new FieldPath("records", volunteer.id),
-                    deleteField()
-                );
-            }
-            else if (Object.hasOwn(data, volunteer.id)) {
-                batch.update(
-                    attendanceDoc.ref,
-                    new FieldPath(volunteer.id),
-                    deleteField()
-                );
-            }
+        await apiPost("/api/data", {
+            action: "deleteMember",
+            memberId: volunteer.id
         });
-
-        await batch.commit();
 
         volunteers = volunteers.filter(item => item.id !== volunteer.id);
         delete notesByMember[volunteer.id];
@@ -511,11 +580,9 @@ async function removeProfileFlag() {
     if (!selectedVolunteerId || !confirm("Remove this person's manual flag?")) return;
 
     try {
-        await updateDoc(doc(db, "flags", selectedVolunteerId), {
-            manualFlag: deleteField(),
-            reason: deleteField(),
-            source: deleteField(),
-            flaggedAt: deleteField()
+        await apiPost("/api/data", {
+            action: "removeManualFlag",
+            memberId: selectedVolunteerId
         });
         flagsByMember[selectedVolunteerId] = {
             ...(flagsByMember[selectedVolunteerId] || {}),
@@ -570,16 +637,11 @@ async function saveProfileFlag(event) {
     const reason = document.getElementById("profileFlagReason").value.trim();
     if (!reason || !selectedVolunteerId) return;
 
-    await setDoc(
-        doc(db, "flags", selectedVolunteerId),
-        {
-            manualFlag: true,
-            reason,
-            source: "profile",
-            flaggedAt: Date.now()
-        },
-        { merge: true }
-    );
+    await apiPost("/api/data", {
+        action: "setManualFlag",
+        memberId: selectedVolunteerId,
+        reason
+    });
 
     flagsByMember[selectedVolunteerId] = {
         ...(flagsByMember[selectedVolunteerId] || {}),
@@ -620,13 +682,11 @@ async function saveNote(event) {
         ];
 
     try {
-        await setDoc(
-            doc(db, "memberNotes", selectedVolunteerId),
-            {
-                notes: nextNotes,
-                updatedAt: Date.now()
-            }
-        );
+        await apiPost("/api/data", {
+            action: "setNotes",
+            memberId: selectedVolunteerId,
+            notes: nextNotes
+        });
 
         notesByMember[selectedVolunteerId] =
             nextNotes;
@@ -659,13 +719,11 @@ async function deleteNote(event) {
             .filter(note => Number(note.createdAt) !== createdAt);
 
     try {
-        await setDoc(
-            doc(db, "memberNotes", selectedVolunteerId),
-            {
-                notes: nextNotes,
-                updatedAt: Date.now()
-            }
-        );
+        await apiPost("/api/data", {
+            action: "setNotes",
+            memberId: selectedVolunteerId,
+            notes: nextNotes
+        });
 
         notesByMember[selectedVolunteerId] =
             nextNotes;
@@ -683,46 +741,46 @@ async function deleteNote(event) {
 }
 
 async function loadVolunteers() {
-    const snapshot =
-        await getDocs(collection(db, "members"));
+    const data =
+        await loadCollections(["members"]);
 
     volunteers =
-        snapshot.docs.map(memberDoc => ({
+        (data.members || []).map(memberDoc => ({
             id: memberDoc.id,
-            ...memberDoc.data(),
-            ...(memberDoc.data().profile || {}),
+            ...memberDoc,
+            ...(memberDoc.profile || {}),
             whatsappNumber:
-                memberDoc.data().contact?.whatsappNumber ||
-                memberDoc.data().whatsappNumber ||
-                memberDoc.data().phone ||
+                memberDoc.contact?.whatsappNumber ||
+                memberDoc.whatsappNumber ||
+                memberDoc.phone ||
                 ""
         }));
 }
 
 async function loadSessions() {
-    const snapshot =
-        await getDocs(collection(db, "sessions"));
+    const data =
+        await loadCollections(["sessions"]);
 
     sessionsById = {};
 
-    snapshot.forEach(sessionDoc => {
+    (data.sessions || []).forEach(sessionDoc => {
         sessionsById[sessionDoc.id] =
             {
                 id: sessionDoc.id,
-                ...sessionDoc.data()
+                ...sessionDoc
             };
     });
 }
 
 async function loadAttendance() {
-    const snapshot =
-        await getDocs(collection(db, "attendance"));
+    const data =
+        await loadCollections(["attendance"]);
 
     attendanceByMember = {};
 
-    snapshot.forEach(attendanceDoc => {
+    (data.attendance || []).forEach(attendanceDoc => {
         const attendance =
-            attendanceDoc.data();
+            attendanceDoc;
 
         const records =
             attendance.records || attendance;
@@ -750,26 +808,92 @@ async function loadAttendance() {
 }
 
 async function loadFlags() {
-    const snapshot =
-        await getDocs(collection(db, "flags"));
+    const data =
+        await loadCollections(["flags"]);
 
     flagsByMember = {};
 
-    snapshot.forEach(flagDoc => {
+    (data.flags || []).forEach(flagDoc => {
         flagsByMember[flagDoc.id] =
-            flagDoc.data();
+            flagDoc;
     });
 }
 
 async function loadNotes() {
-    const snapshot =
-        await getDocs(collection(db, "memberNotes"));
+    const data =
+        await loadCollections(["memberNotes"]);
 
     notesByMember = {};
 
-    snapshot.forEach(noteDoc => {
+    (data.memberNotes || []).forEach(noteDoc => {
         notesByMember[noteDoc.id] =
-            noteDoc.data().notes || [];
+            noteDoc.notes || [];
+    });
+}
+
+async function loadRecordData() {
+    const data =
+        await loadCollections(["members", "sessions", "attendance", "flags", "memberNotes"]);
+
+    volunteers =
+        (data.members || []).map(memberDoc => ({
+            id: memberDoc.id,
+            ...memberDoc,
+            ...(memberDoc.profile || {}),
+            whatsappNumber:
+                memberDoc.contact?.whatsappNumber ||
+                memberDoc.whatsappNumber ||
+                memberDoc.phone ||
+                ""
+        }));
+
+    sessionsById = {};
+    (data.sessions || []).forEach(sessionDoc => {
+        sessionsById[sessionDoc.id] = {
+            id: sessionDoc.id,
+            ...sessionDoc
+        };
+    });
+
+    attendanceByMember = {};
+    (data.attendance || []).forEach(attendanceDoc => {
+        const attendance =
+            attendanceDoc;
+
+        const records =
+            attendance.records || attendance;
+
+        Object.entries(records).forEach(([memberId, record]) => {
+            if (!record || typeof record !== "object" || !record.status) {
+                return;
+            }
+
+            const session =
+                sessionsById[attendanceDoc.id] || {};
+
+            if (!attendanceByMember[memberId]) {
+                attendanceByMember[memberId] = [];
+            }
+
+            attendanceByMember[memberId].push({
+                status: record.status,
+                date: session.date || "No date",
+                title: session.title || "Session",
+                savedAt: attendance.savedAt || session.createdAt || 0
+            });
+        });
+    });
+
+    flagsByMember = {};
+    (data.flags || []).forEach(flagDoc => {
+        flagsByMember[flagDoc.id] =
+            flagDoc;
+    });
+
+    notesByMember = {};
+    (data.memberNotes || []).forEach(noteDoc => {
+        notesByMember[noteDoc.id] =
+            noteDoc.notes || [];
     });
 }
 
@@ -795,11 +919,7 @@ searchResults.addEventListener("click", (event) => {
 
 async function initializePage() {
     try {
-        await loadVolunteers();
-        await loadSessions();
-        await loadAttendance();
-        await loadFlags();
-        await loadNotes();
+        await loadRecordData();
 
         const requestedMemberId =
             new URLSearchParams(window.location.search).get("member");

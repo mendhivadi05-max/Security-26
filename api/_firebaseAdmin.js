@@ -1,5 +1,6 @@
 const admin = require("firebase-admin");
-const { FieldValue, getFirestore } = require("firebase-admin/firestore");
+const { cert, getApp, getApps, initializeApp } = require("firebase-admin/app");
+const { FieldPath, FieldValue, getFirestore } = require("firebase-admin/firestore");
 
 function requiredEnv(name) {
     const value = process.env[name];
@@ -14,12 +15,12 @@ function privateKey() {
 }
 
 function initializeAdmin() {
-    if (admin.apps.length) {
-        return admin.app();
+    if (getApps().length) {
+        return getApp();
     }
 
-    return admin.initializeApp({
-        credential: admin.credential.cert({
+    return initializeApp({
+        credential: cert({
             projectId: requiredEnv("FIREBASE_PROJECT_ID"),
             clientEmail: requiredEnv("FIREBASE_CLIENT_EMAIL"),
             privateKey: privateKey()
@@ -34,6 +35,7 @@ function firestore() {
 
 module.exports = {
     admin,
+    FieldPath,
     FieldValue,
     firestore
 };

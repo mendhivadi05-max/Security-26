@@ -3,6 +3,34 @@ const { jsonBody, rateLimit, requestId, requireAdmin, sendError } = require("../
 const { logAction } = require("../_actionLog");
 const { memberName, sendBatch } = require("../_whatsappService");
 
+function cleanId(value) {
+    const id = String(value || "").trim();
+    return id && !id.includes("/") && !id.includes("..") ? id : "";
+}
+
+function cleanString(value, maxLength = 200) {
+    return String(value || "").trim().slice(0, maxLength);
+}
+
+function isLockedAfterTwoDays(sessionDate) {
+    if (!sessionDate) {
+        return false;
+    }
+
+    const meetingDate = new Date(`${sessionDate}T00:00:00`);
+    if (Number.isNaN(meetingDate.getTime())) {
+        return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lockDate = new Date(meetingDate);
+    lockDate.setDate(lockDate.getDate() + 2);
+
+    return today > lockDate;
+}
+
 module.exports = async function handler(request, response) {
     if (request.method !== "POST") {
         response.setHeader("Allow", "POST");
@@ -14,7 +42,7 @@ module.exports = async function handler(request, response) {
         const user = await requireAdmin(request);
 
         const body = jsonBody(request);
-        const sessionId = (body.sessionId || "").toString().trim();
+        const sessionId = cleanId(body.sessionId);
         const records = body.records && typeof body.records === "object" ? body.records : null;
 
         if (!sessionId || !records) {
@@ -23,12 +51,13 @@ module.exports = async function handler(request, response) {
 
         const normalizedRecords = Object.fromEntries(
             Object.entries(records)
-                .filter(([memberId]) => memberId)
+                .filter(([memberId]) => cleanId(memberId))
+                .slice(0, 500)
                 .map(([memberId, record]) => [
-                    memberId,
+                    cleanId(memberId),
                     {
-                        name: String(record?.name || "Unnamed"),
-                        rollNumber: String(record?.rollNumber || ""),
+                        name: cleanString(record?.name || "Unnamed", 160),
+                        rollNumber: cleanString(record?.rollNumber || "", 80),
                         status: record?.status === "Absent" ? "Absent" : "Present"
                     }
                 ])
@@ -45,15 +74,20 @@ module.exports = async function handler(request, response) {
         }
 
         const session = sessionSnap.data();
-        const attendanceRef = db.collection("attendance").doc(sessionId);
-        const existingAttendance = await attendanceRef.get();
-        const isFirstSave = !existingAttendance.exists;
+        if (session.locked === true || isLockedAfterTwoDays(session.date)) {
+            return response.status(403).json({ error: "Attendance is locked for this meeting." });
+        }
 
-        await attendanceRef.set({
-            savedAt: Date.now(),
-            savedAtServer: FieldValue.serverTimestamp(),
-            records: normalizedRecords
-        }, { merge: true });
+        const attendanceRef = db.collection("attendance").doc(sessionId);
+        const isFirstSave = await db.runTransaction(async transaction => {
+            const existingAttendance = await transaction.get(attendanceRef);
+            transaction.set(attendanceRef, {
+                savedAt: Date.now(),
+                savedAtServer: FieldValue.serverTimestamp(),
+                records: normalizedRecords
+            }, { merge: true });
+            return !existingAttendance.exists;
+        });
 
         const absentMemberIds = isFirstSave
             ? Object.entries(normalizedRecords)

@@ -27,7 +27,42 @@ function requestId() {
     return crypto.randomUUID();
 }
 
+function requestHost(request) {
+    return (
+        request.headers["x-forwarded-host"] ||
+        request.headers.host ||
+        ""
+    ).toString().split(",")[0].trim().toLowerCase();
+}
+
+function assertSameOrigin(request) {
+    const origin = request.headers.origin || request.headers.referer;
+    if (!origin) {
+        return;
+    }
+
+    let originHost = "";
+    try {
+        originHost = new URL(origin).host.toLowerCase();
+    }
+    catch {
+        const error = new Error("Invalid request origin.");
+        error.statusCode = 403;
+        throw error;
+    }
+
+    if (originHost !== requestHost(request)) {
+        const error = new Error("Request origin is not allowed.");
+        error.statusCode = 403;
+        throw error;
+    }
+}
+
 async function requireAdmin(request) {
+    if (!["GET", "HEAD", "OPTIONS"].includes(request.method || "GET")) {
+        assertSameOrigin(request);
+    }
+
     const user = await verifyFirebaseToken(parseCookies(request).clubDeskSession);
     if (!user) {
         const error = new Error("Your session has expired.");
@@ -70,6 +105,7 @@ function sendError(response, error, fallback = "Request failed.") {
 }
 
 module.exports = {
+    assertSameOrigin,
     jsonBody,
     rateLimit,
     requestId,

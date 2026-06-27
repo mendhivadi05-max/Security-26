@@ -1,20 +1,14 @@
-import { db } from "../Firebase/Firebase.js";
-
-import {
-    collection,
-    getDocs
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { loadCollections } from "../Shared/Api.js";
 
 async function loadVolunteerBirthdays() {
-    const snapshot =
-        await getDocs(collection(db, "members"));
+    const data =
+        await loadCollections(["birthdays"]);
 
     const birthdays = {};
 
-    snapshot.forEach(memberDoc => {
+    (data.birthdays || []).forEach(memberDoc => {
         const member =
-            memberDoc.data();
+            memberDoc;
 
         const dateOfBirth =
             (member.dateOfBirth || "").toString();
@@ -36,7 +30,8 @@ async function loadVolunteerBirthdays() {
         birthdays[key].push({
             id: memberDoc.id,
             name: member.name || "Unnamed volunteer",
-            course: member.course || "No course",
+            branch: member.branch || member.course || "No branch",
+            course: member.branch || member.course || "No branch",
             batch: member.batch || "No batch"
         });
     });

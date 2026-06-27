@@ -84,15 +84,14 @@ body{
     font-size:2rem;
     letter-spacing:2px;
     cursor:pointer;
+    transition:box-shadow .12s;
 }
 
 .login-box button:hover{
-    transform:translate(-3px,-3px);
     box-shadow:8px 8px 0 black;
 }
 
 .login-box button:active{
-    transform:translate(2px,2px);
     box-shadow:2px 2px 0 black;
 }
 
@@ -128,4 +127,73 @@ body{
 .legal-links a{
     color:#111;
     font-weight:700;
+}
+
+@media(max-width:520px){
+    body{
+        align-items:flex-start;
+        padding:14px;
+    }
+
+    .login-box{
+        max-width:none;
+        min-height:calc(100svh - 28px);
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        padding:24px 18px;
+        border-width:4px;
+        box-shadow:6px 6px 0 black;
+    }
+
+    .login-logo{
+        width:82px;
+        height:82px;
+        margin-inline:auto;
+        margin-bottom:10px;
+    }
+
+    .login-box h1{
+        font-size:2.55rem;
+        letter-spacing:2px;
+        text-shadow:2px 2px 0 black;
+        overflow-wrap:anywhere;
+    }
+
+    .subtitle{
+        margin-bottom:18px;
+    }
+
+    .login-box label{
+        margin-top:14px;
+        margin-bottom:7px;
+        font-size:1rem;
+    }
+
+    .login-box input{
+        min-height:48px;
+        padding:12px;
+        border-width:3px;
+        box-shadow:3px 3px 0 black;
+        font-size:16px;
+    }
+
+    .turnstile-widget{
+        min-height:64px;
+        overflow:hidden;
+    }
+
+    .login-box button{
+        margin-top:22px;
+        min-height:50px;
+        padding:10px;
+        border-width:3px;
+        box-shadow:3px 3px 0 black;
+        font-size:1.65rem;
+    }
+
+    .legal-links{
+        gap:8px 12px;
+        font-size:.9rem;
+    }
 }

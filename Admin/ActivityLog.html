@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>body { visibility: hidden; }</style>
+    <script type="module" src="../Auth/AuthGuard.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>security'26 - Activity Log</title>
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="ActivityLog.css">
+</head>
+<body>
+    <main class="page-shell activity-shell">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">Admin Audit</p>
+                <h1>Activity Log</h1>
+            </div>
+            <nav class="page-nav" aria-label="Page navigation">
+                <a class="secondary-link" href="../Home/Home">Home</a>
+            </nav>
+        </header>
+
+        <section class="activity-toolbar" aria-label="Activity filters">
+            <label>
+                Search
+                <input type="search" id="activitySearch" placeholder="Admin, action, volunteer, meeting...">
+            </label>
+            <label>
+                Action
+                <select id="actionFilter">
+                    <option value="all">All actions</option>
+                </select>
+            </label>
+            <label>
+                Admin
+                <select id="adminFilter">
+                    <option value="all">All admins</option>
+                </select>
+            </label>
+        </section>
+
+        <section class="activity-summary" id="activitySummary" aria-label="Activity summary"></section>
+        <section class="activity-list" id="activityList" aria-live="polite">
+            <div class="empty-state-panel">
+                <strong>Loading activity...</strong>
+                <span>Checking the admin audit trail.</span>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="ActivityLog.js"></script>
+</body>
+</html>

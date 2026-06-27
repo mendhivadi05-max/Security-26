@@ -245,3 +245,85 @@ main{
 .status-cell{flex-wrap:wrap}.status-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.member-row.is-flagged{background:#fff0f0}
 #saveAttendance{background:#a0ff9f;color:#111}
 @media(max-width:760px){.attendance-header{margin:10px}.table-head,.member-row{grid-template-columns:75px 1fr}.table-head span:last-child{display:none}.status-cell{grid-column:1/-1;justify-content:flex-end}}
+
+@media(max-width:520px){
+    .attendance-header{
+        grid-template-columns:1fr;
+        gap:12px;
+        padding:12px;
+        margin:10px;
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+    }
+
+    .logo{
+        width:54px;
+        height:54px;
+    }
+
+    .session-details h1{
+        font-size:1.85rem;
+        line-height:1;
+        margin-bottom:10px;
+    }
+
+    .detail-grid{
+        gap:8px;
+    }
+
+    .detail-grid div{
+        padding:8px;
+        border-width:2px;
+    }
+
+    main{
+        padding:12px 10px 86px;
+    }
+
+    .attendance-table{
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+    }
+
+    .table-head{
+        display:none;
+    }
+
+    .member-row{
+        grid-template-columns:1fr;
+        gap:8px;
+        padding:12px;
+    }
+
+    .roll-number{
+        color:#4b5563;
+        font-size:.88rem;
+    }
+
+    .member-name{
+        font-size:1rem;
+    }
+
+    .member-history{
+        gap:5px;
+    }
+
+    .history-pill,
+    .history-empty{
+        font-size:.72rem;
+        padding:4px 7px;
+    }
+
+    .status-cell{
+        grid-column:auto;
+        justify-content:space-between;
+        width:100%;
+    }
+
+    #saveAttendance{
+        left:10px;
+        right:10px;
+        bottom:10px;
+        width:calc(100% - 20px);
+    }
+}

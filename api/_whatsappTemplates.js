@@ -28,21 +28,36 @@ function templateLanguage() {
     return process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en";
 }
 
+function templateParameterFormat() {
+    const format = (process.env.WHATSAPP_TEMPLATE_PARAMETER_FORMAT || "named")
+        .trim()
+        .toLowerCase();
+
+    return format === "positional" ? "positional" : "named";
+}
+
 function publicTemplates() {
     return Object.fromEntries(
         Object.entries(TEMPLATE_CONFIG).map(([key, config]) => [
             key,
             {
                 name: templateName(key),
-                variables: config.variables
+                variables: config.variables,
+                parameterFormat: templateParameterFormat()
             }
         ])
     );
+}
+
+function templateVariables(templateKey) {
+    return TEMPLATE_CONFIG[templateKey]?.variables || [];
 }
 
 module.exports = {
     TEMPLATE_CONFIG,
     publicTemplates,
     templateLanguage,
-    templateName
+    templateName,
+    templateParameterFormat,
+    templateVariables
 };

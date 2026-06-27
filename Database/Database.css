@@ -497,6 +497,33 @@ textarea{
 .profile-flag-notice summary{padding:10px 12px;display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer;list-style:none}
 .profile-flag-notice summary::-webkit-details-marker{display:none}
 .profile-flag-notice p{margin:0;padding:0 12px 12px 48px;font-weight:700}
+.profile-reason-reply{
+    display:grid;
+    gap:6px;
+    margin:0 12px 12px 48px;
+    padding:10px;
+    border:2px solid #166534;
+    background:#eefdf3;
+    color:#14532d;
+}
+.profile-reason-reply span{
+    overflow-wrap:anywhere;
+    color:#111827;
+}
+.profile-reason-reply small{
+    color:#4b5563;
+    font-weight:700;
+}
+.profile-reason-reply.is-pending{
+    border-color:#1d4ed8;
+    background:#dbeafe;
+    color:#1e3a8a;
+}
+.profile-reason-reply.is-expired{
+    border-color:#6b7280;
+    background:#f3f4f6;
+    color:#4b5563;
+}
 
 .detail-list{
     display:grid;
@@ -813,3 +840,105 @@ textarea{
 .flag-action.is-flagged{background:#ff8a00}
 .edit-image-preview{min-height:180px}
 .remove-image-btn{justify-self:start}
+
+@media(max-width:520px){
+    .database-shell,
+    .page-shell{
+        width:min(100% - 18px,1120px);
+        padding:12px 0;
+    }
+
+    .database-panel,
+    .volunteer-form,
+    .search-panel,
+    .profile-card,
+    .statistics-toolbar,
+    .analytics-panel{
+        border-width:4px;
+        box-shadow:4px 4px 0 #111;
+    }
+
+    .database-panel,
+    .choice-modal{
+        padding:18px;
+    }
+
+    .choice-card{
+        padding:12px;
+        gap:10px;
+    }
+
+    .choice-number{
+        width:28px;
+        height:28px;
+        flex:0 0 auto;
+    }
+
+    .volunteer-form,
+    .search-panel,
+    .profile-card,
+    .statistics-toolbar,
+    .analytics-panel{
+        padding:14px;
+    }
+
+    .image-preview{
+        min-height:160px;
+    }
+
+    .profile-top{
+        grid-template-columns:72px minmax(0,1fr);
+        gap:12px;
+    }
+
+    .large-avatar{
+        width:72px;
+        height:72px;
+        font-size:1.25rem;
+    }
+
+    .profile-summary .detail-list{
+        grid-template-columns:1fr;
+    }
+
+    .profile-actions{
+        grid-template-columns:1fr;
+    }
+
+    .profile-flag-notice,
+    .whatsapp-area,
+    .attendance-card,
+    .calendar-card,
+    .notes-card{
+        padding:12px;
+    }
+
+    .mini-calendar{
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:8px;
+    }
+
+    .calendar-box{
+        min-height:38px;
+    }
+
+    .note-item{
+        align-items:flex-start;
+    }
+
+    .meeting-row{
+        grid-template-columns:1fr;
+    }
+
+    .attendance-bar{
+        grid-row:auto;
+    }
+
+    .summary-grid{
+        gap:10px;
+    }
+
+    .summary-card{
+        padding:12px;
+    }
+}

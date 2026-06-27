@@ -5,6 +5,7 @@ const {
     sessionCookie,
     verifyTurnstile
 } = require("./_auth");
+const { assertSameOrigin, rateLimit } = require("./_apiUtils");
 
 module.exports = async function handler(request, response) {
     if (request.method !== "POST") {
@@ -12,6 +13,9 @@ module.exports = async function handler(request, response) {
     }
 
     try {
+        assertSameOrigin(request);
+        rateLimit(request, { key: "login", limit: 8, windowMs: 60_000 });
+
         const { email, identifier, password, turnstileToken } = request.body || {};
         const loginEmail = normalizeLoginEmail(identifier || email);
         const turnstileEnabled = isTurnstileConfigured();

@@ -38,8 +38,8 @@ insightSearchForm.addEventListener("submit", (event) => {
 
     const target =
         query
-            ? `BrowseStatistics.html?q=${encodeURIComponent(query)}`
-            : "BrowseStatistics.html";
+            ? `BrowseStatistics?q=${encodeURIComponent(query)}`
+            : "BrowseStatistics";
 
     window.location.href = target;
 });

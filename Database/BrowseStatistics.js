@@ -1,10 +1,4 @@
-import { db } from "../Firebase/Firebase.js";
-
-import {
-    collection,
-    getDocs
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { loadCollections } from "../Shared/Api.js";
 
 const elements = {
     search: document.getElementById("statisticsSearch"),
@@ -84,7 +78,7 @@ function filteredRows() {
                 row.sessionTitle,
                 row.sessionDate,
                 row.memberName,
-                row.course,
+                row.branch,
                 row.batch,
                 row.gender,
                 row.year,
@@ -249,30 +243,30 @@ function render() {
 }
 
 async function loadData() {
-    const [memberSnapshot, sessionSnapshot, attendanceSnapshot] =
-        await Promise.all([
-            getDocs(collection(db, "members")),
-            getDocs(collection(db, "sessions")),
-            getDocs(collection(db, "attendance"))
-        ]);
+    const data =
+        await loadCollections(["members", "sessions", "attendance"]);
 
-    memberSnapshot.forEach(memberDoc => {
+    members = {};
+    sessions = {};
+    attendanceRows = [];
+
+    (data.members || []).forEach(memberDoc => {
         members[memberDoc.id] = {
             id: memberDoc.id,
-            ...memberDoc.data()
+            ...memberDoc
         };
     });
 
-    sessionSnapshot.forEach(sessionDoc => {
+    (data.sessions || []).forEach(sessionDoc => {
         sessions[sessionDoc.id] = {
             id: sessionDoc.id,
-            ...sessionDoc.data()
+            ...sessionDoc
         };
     });
 
-    attendanceSnapshot.forEach(attendanceDoc => {
+    (data.attendance || []).forEach(attendanceDoc => {
         const attendance =
-            attendanceDoc.data();
+            attendanceDoc;
 
         const records =
             attendance.records || attendance;
@@ -282,11 +276,15 @@ async function loadData() {
                 return;
             }
 
+            if (!members[memberId] || !sessions[attendanceDoc.id]) {
+                return;
+            }
+
             const member =
-                members[memberId] || {};
+                members[memberId];
 
             const session =
-                sessions[attendanceDoc.id] || {};
+                sessions[attendanceDoc.id];
 
             attendanceRows.push({
                 sessionId: attendanceDoc.id,
@@ -294,7 +292,8 @@ async function loadData() {
                 sessionDate: text(session.date, "No date"),
                 memberId,
                 memberName: text(member.name),
-                course: text(member.course),
+                branch: text(member.branch || member.course),
+                course: text(member.branch || member.course),
                 batch: text(member.batch),
                 gender: text(member.gender),
                 year: memberYear(member),

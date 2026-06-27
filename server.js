@@ -66,6 +66,56 @@ const contentTypes = {
     ".svg": "image/svg+xml"
 };
 
+const blockedStaticNames = new Set([
+    ".env",
+    ".env.local",
+    ".env.production",
+    "package-lock.json",
+    "firebase-debug.log"
+]);
+
+const cleanHtmlRoutes = new Map([
+    ["/Auth/Auth", "/Auth/Auth.html"],
+    ["/Home/Home", "/Home/Home.html"],
+    ["/Attendance/AddAttendance", "/Attendance/AddAttendance.html"],
+    ["/MeetingRecords/MeetingRecords", "/MeetingRecords/MeetingRecords.html"],
+    ["/Database/Database", "/Database/Database.html"],
+    ["/Database/AddVolunteer", "/Database/AddVolunteer.html"],
+    ["/Database/VolunteerRecords", "/Database/VolunteerRecords.html"],
+    ["/Database/BrowseStatistics", "/Database/BrowseStatistics.html"],
+    ["/Flags/Flags", "/Flags/Flags.html"],
+    ["/Flags/WhatsappReminder", "/Flags/WhatsappReminder.html"],
+    ["/Legal/Privacy", "/Legal/Privacy.html"],
+    ["/Legal/Terms", "/Legal/Terms.html"],
+    ["/Legal/Cookies", "/Legal/Cookies.html"],
+    ["/Legal/AcceptableUse", "/Legal/AcceptableUse.html"],
+    ["/Admin/ActivityLog", "/Admin/ActivityLog.html"]
+]);
+
+const htmlToCleanRoutes = new Map(
+    [...cleanHtmlRoutes.entries()].map(([cleanPath, htmlPath]) => [htmlPath, cleanPath])
+);
+
+function cleanRoutePath(pathname) {
+    return pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
+}
+
+function htmlRouteFor(pathname) {
+    const cleanPath = cleanRoutePath(pathname);
+    return cleanHtmlRoutes.get(cleanPath) || cleanPath;
+}
+
+function isBlockedStaticFile(filePath) {
+    const relative = path.relative(root, filePath);
+    if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+        return true;
+    }
+
+    return relative
+        .split(path.sep)
+        .some(part => part.startsWith(".") || blockedStaticNames.has(part));
+}
+
 function sendJson(response, status, body) {
     response.writeHead(status, {
         "Content-Type": "application/json; charset=utf-8",
@@ -106,6 +156,7 @@ function readJson(request) {
         });
         request.on("end", () => {
             try {
+                request.rawBody = body;
                 resolve(body ? JSON.parse(body) : {});
             }
             catch (error) {
@@ -190,6 +241,22 @@ async function handleApi(request, response, pathname) {
         return;
     }
 
+    if (pathname === "/api/session" && ["GET", "POST"].includes(request.method)) {
+        const user = await verifyFirebaseToken(
+            parseCookies(request).clubDeskSession
+        );
+        if (!user) {
+            sendJson(response, 401, { error: "Your session has expired." });
+            return;
+        }
+
+        sendJson(response, 200, {
+            valid: true,
+            username: user.displayName || user.email?.split("@")[0] || "User"
+        });
+        return;
+    }
+
     if (request.method !== "POST") {
         sendJson(response, 405, { error: "Method not allowed" });
         return;
@@ -233,22 +300,6 @@ async function handleApi(request, response, pathname) {
         return;
     }
 
-    if (pathname === "/api/session") {
-        const user = await verifyFirebaseToken(
-            parseCookies(request).clubDeskSession
-        );
-        if (!user) {
-            sendJson(response, 401, { error: "Your session has expired." });
-            return;
-        }
-
-        sendJson(response, 200, {
-            valid: true,
-            username: user.displayName || user.email?.split("@")[0] || "User"
-        });
-        return;
-    }
-
     if (pathname === "/api/logout") {
         response.setHeader("Set-Cookie", sessionCookie("", 0));
         sendJson(response, 200, { success: true });
@@ -260,7 +311,18 @@ async function handleApi(request, response, pathname) {
 
 http.createServer(async (request, response) => {
     const requestUrl = new URL(request.url, `http://${request.headers.host}`);
-    const route = requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname;
+    const cleanRedirect = htmlToCleanRoutes.get(requestUrl.pathname);
+    if (cleanRedirect) {
+        requestUrl.pathname = cleanRedirect;
+        response.writeHead(301, {
+            "Location": `${requestUrl.pathname}${requestUrl.search}`,
+            "Cache-Control": "no-store"
+        });
+        response.end();
+        return;
+    }
+
+    const route = requestUrl.pathname === "/" ? "/index.html" : htmlRouteFor(requestUrl.pathname);
 
     if (route.startsWith("/api/")) {
         try {
@@ -268,8 +330,8 @@ http.createServer(async (request, response) => {
         }
         catch (error) {
             console.error("API request failed:", error);
-            sendJson(response, 500, {
-                error: error.message || "Server error"
+            sendJson(response, error.statusCode || 500, {
+                error: error.statusCode ? error.message : "Server error"
             });
         }
         return;
@@ -289,16 +351,24 @@ http.createServer(async (request, response) => {
         !await verifyFirebaseToken(parseCookies(request).clubDeskSession)
     ) {
         response.writeHead(302, {
-            "Location": "/Auth/Auth.html",
+            "Location": "/Auth/Auth",
             "Cache-Control": "no-store"
         });
         response.end();
         return;
     }
 
-    const filePath = path.normalize(path.join(root, decodeURIComponent(route)));
+    let filePath;
+    try {
+        filePath = path.resolve(root, `.${decodeURIComponent(route)}`);
+    }
+    catch {
+        response.writeHead(400);
+        response.end("Bad request");
+        return;
+    }
 
-    if (!filePath.startsWith(root)) {
+    if (isBlockedStaticFile(filePath)) {
         response.writeHead(403);
         response.end("Forbidden");
         return;

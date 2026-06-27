@@ -1,0 +1,76 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm start",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://challenges.cloudflare.com; script-src-elem 'self' 'unsafe-inline' https://www.gstatic.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.googleapis.com wss://*.firebaseio.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    { "source": "/Auth/Auth.html", "destination": "/Auth/Auth", "permanent": true },
+    { "source": "/Home/Home.html", "destination": "/Home/Home", "permanent": true },
+    { "source": "/Attendance/AddAttendance.html", "destination": "/Attendance/AddAttendance", "permanent": true },
+    { "source": "/MeetingRecords/MeetingRecords.html", "destination": "/MeetingRecords/MeetingRecords", "permanent": true },
+    { "source": "/Database/Database.html", "destination": "/Database/Database", "permanent": true },
+    { "source": "/Database/AddVolunteer.html", "destination": "/Database/AddVolunteer", "permanent": true },
+    { "source": "/Database/VolunteerRecords.html", "destination": "/Database/VolunteerRecords", "permanent": true },
+    { "source": "/Database/BrowseStatistics.html", "destination": "/Database/BrowseStatistics", "permanent": true },
+    { "source": "/Flags/Flags.html", "destination": "/Flags/Flags", "permanent": true },
+    { "source": "/Flags/WhatsappReminder.html", "destination": "/Flags/WhatsappReminder", "permanent": true },
+    { "source": "/Legal/Privacy.html", "destination": "/Legal/Privacy", "permanent": true },
+    { "source": "/Legal/Terms.html", "destination": "/Legal/Terms", "permanent": true },
+    { "source": "/Legal/Cookies.html", "destination": "/Legal/Cookies", "permanent": true },
+    { "source": "/Legal/AcceptableUse.html", "destination": "/Legal/AcceptableUse", "permanent": true },
+    { "source": "/Admin/ActivityLog.html", "destination": "/Admin/ActivityLog", "permanent": true }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cdn-cgi/challenge-platform/:path*",
+      "destination": "https://challenges.cloudflare.com/cdn-cgi/challenge-platform/:path*"
+    },
+    { "source": "/Auth/Auth", "destination": "/Auth/Auth.html" },
+    { "source": "/Home/Home", "destination": "/Home/Home.html" },
+    { "source": "/Attendance/AddAttendance", "destination": "/Attendance/AddAttendance.html" },
+    { "source": "/MeetingRecords/MeetingRecords", "destination": "/MeetingRecords/MeetingRecords.html" },
+    { "source": "/Database/Database", "destination": "/Database/Database.html" },
+    { "source": "/Database/AddVolunteer", "destination": "/Database/AddVolunteer.html" },
+    { "source": "/Database/VolunteerRecords", "destination": "/Database/VolunteerRecords.html" },
+    { "source": "/Database/BrowseStatistics", "destination": "/Database/BrowseStatistics.html" },
+    { "source": "/Flags/Flags", "destination": "/Flags/Flags.html" },
+    { "source": "/Flags/WhatsappReminder", "destination": "/Flags/WhatsappReminder.html" },
+    { "source": "/Legal/Privacy", "destination": "/Legal/Privacy.html" },
+    { "source": "/Legal/Terms", "destination": "/Legal/Terms.html" },
+    { "source": "/Legal/Cookies", "destination": "/Legal/Cookies.html" },
+    { "source": "/Legal/AcceptableUse", "destination": "/Legal/AcceptableUse.html" },
+    { "source": "/Admin/ActivityLog", "destination": "/Admin/ActivityLog.html" }
+  ]
+}
