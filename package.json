@@ -8,6 +8,7 @@
     "check": "node --check server.js"
   },
   "dependencies": {
+    "@vercel/functions": "^3.7.3",
     "firebase-admin": "^14.0.0"
   },
   "engines": {
