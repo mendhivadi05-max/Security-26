@@ -9,6 +9,17 @@ const list =
 const count =
     document.getElementById("messageCount");
 
+const filters = {
+    template: document.getElementById("templateFilter"),
+    type: document.getElementById("typeFilter"),
+    person: document.getElementById("personFilter"),
+    date: document.getElementById("dateFilter"),
+    clear: document.getElementById("clearMessageFilters")
+};
+
+let allMessages = [];
+let allMembersById = {};
+
 function text(value, fallback = "Not provided") {
     const result =
         String(value || "").trim();
@@ -46,6 +57,22 @@ function formatDate(message) {
         : "No timestamp";
 }
 
+function dateKey(message) {
+    const value =
+        Number(message.statusUpdatedAtMs || message.createdAtMs || 0);
+
+    if (!value) {
+        return "";
+    }
+
+    const date = new Date(value);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
 function templateLabel(templateKey) {
     const labels = {
         meetingReminder: "Meeting reminder",
@@ -54,6 +81,21 @@ function templateLabel(templateKey) {
     };
 
     return labels[templateKey] || text(templateKey, "WhatsApp message");
+}
+
+function typeLabel(status) {
+    const normalized =
+        text(status, "sent").toLowerCase();
+
+    const labels = {
+        delivered: "Delivered",
+        failed: "Failed",
+        read: "Read",
+        sent: "Sent",
+        undelivered: "Undelivered"
+    };
+
+    return labels[normalized] || text(status, "Sent");
 }
 
 function statusClass(status) {
@@ -96,6 +138,64 @@ function messageDetail(message) {
     return Object.entries(variables)
         .map(([key, value]) => `${key}: ${value}`)
         .join(" | ") || "No template variables recorded";
+}
+
+function addOptions(select, options) {
+    options
+        .forEach(({ value, label }) => {
+            const option =
+                document.createElement("option");
+
+            option.value = value;
+            option.textContent = label;
+            select.append(option);
+        });
+}
+
+function setupFilters(messages, membersById) {
+    const templates =
+        [...new Set(messages.map(message => text(message.templateKey, "")).filter(Boolean))]
+            .sort((a, b) => templateLabel(a).localeCompare(templateLabel(b)))
+            .map(value => ({ value, label: templateLabel(value) }));
+
+    const types =
+        [...new Set(messages.map(message => text(message.status || "sent", "sent").toLowerCase()))]
+            .sort((a, b) => typeLabel(a).localeCompare(typeLabel(b)))
+            .map(value => ({ value, label: typeLabel(value) }));
+
+    const people =
+        [...new Set(messages.map(message => message.memberId).filter(Boolean))]
+            .map(memberId => ({
+                value: memberId,
+                label: memberName(membersById[memberId])
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
+
+    addOptions(filters.template, templates);
+    addOptions(filters.type, types);
+    addOptions(filters.person, people);
+}
+
+function filteredMessages() {
+    return allMessages.filter(message => {
+        const status =
+            text(message.status || "sent", "sent").toLowerCase();
+
+        return (
+            (filters.template.value === "all" || message.templateKey === filters.template.value) &&
+            (filters.type.value === "all" || status === filters.type.value) &&
+            (filters.person.value === "all" || message.memberId === filters.person.value) &&
+            (!filters.date.value || dateKey(message) === filters.date.value)
+        );
+    });
+}
+
+function renderFilteredMessages() {
+    const messages =
+        filteredMessages();
+
+    renderSummary(messages);
+    renderMessages(messages, allMembersById);
 }
 
 function renderSummary(messages) {
@@ -150,8 +250,28 @@ function renderMessages(messages, membersById) {
         return;
     }
 
+    const groups =
+        messages.reduce((result, message) => {
+            const key =
+                message.templateKey || "unknown";
+
+            if (!result[key]) {
+                result[key] = [];
+            }
+
+            result[key].push(message);
+            return result;
+        }, {});
+
     list.innerHTML =
-        messages.map(message => {
+        Object.entries(groups).map(([templateKey, groupMessages]) => `
+            <section class="message-template-group">
+                <div class="message-group-heading">
+                    <h3>${escapeHtml(templateLabel(templateKey))}</h3>
+                    <span>${groupMessages.length} messages</span>
+                </div>
+                <div class="message-group-list">
+                    ${groupMessages.map(message => {
             const member =
                 membersById[message.memberId] || {};
 
@@ -179,7 +299,10 @@ function renderMessages(messages, membersById) {
                     </div>
                 </article>
             `;
-        }).join("");
+        }).join("")}
+                </div>
+            </section>
+        `).join("");
 }
 
 async function initializePage() {
@@ -195,13 +318,14 @@ async function initializePage() {
             membersById[member.id] = member;
         });
 
-        const messages =
+        allMembersById = membersById;
+        allMessages =
             (data.whatsappMessages || [])
                 .filter(message => message.direction !== "incoming")
                 .sort((a, b) => Number(b.statusUpdatedAtMs || b.createdAtMs || 0) - Number(a.statusUpdatedAtMs || a.createdAtMs || 0));
 
-        renderSummary(messages);
-        renderMessages(messages, membersById);
+        setupFilters(allMessages, allMembersById);
+        renderFilteredMessages();
     }
     catch (error) {
         console.error("WhatsApp message log load error:", error);
@@ -210,5 +334,22 @@ async function initializePage() {
         list.innerHTML = "";
     }
 }
+
+[
+    filters.template,
+    filters.type,
+    filters.person,
+    filters.date
+].forEach(filter => {
+    filter.addEventListener("change", renderFilteredMessages);
+});
+
+filters.clear.addEventListener("click", () => {
+    filters.template.value = "all";
+    filters.type.value = "all";
+    filters.person.value = "all";
+    filters.date.value = "";
+    renderFilteredMessages();
+});
 
 initializePage();

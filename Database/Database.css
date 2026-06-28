@@ -398,6 +398,48 @@ textarea{
 
 .message-log-list{
     display:grid;
+    gap:18px;
+}
+
+.message-filter-panel{
+    display:grid;
+    gap:12px;
+}
+
+.message-filter-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.filter-actions{
+    display:flex;
+    justify-content:flex-end;
+}
+
+.message-template-group{
+    display:grid;
+    gap:10px;
+}
+
+.message-group-heading{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border-bottom:3px solid #111;
+    padding-bottom:8px;
+}
+
+.message-group-heading h3{
+    margin:0;
+}
+
+.message-group-heading span{
+    color:#667085;
+    font-weight:700;
+}
+
+.message-group-list{
+    display:grid;
     gap:10px;
 }
 
@@ -769,6 +811,7 @@ textarea{
     .form-grid,
     .record-grid,
     .filter-grid,
+    .message-filter-grid,
     .summary-grid,
     .analytics-grid{
         grid-template-columns:1fr;
@@ -790,6 +833,14 @@ textarea{
 
     .message-log-row{
         grid-template-columns:1fr;
+    }
+
+    .filter-actions{
+        justify-content:stretch;
+    }
+
+    .filter-actions button{
+        width:100%;
     }
 
     .attendance-bar{

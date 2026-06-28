@@ -372,7 +372,8 @@ body{margin:0;padding:28px 0}
     font:inherit;
 }
 
-.select-all-reminders-button{
+.select-all-reminders-button,
+.unselect-all-reminders-button{
     border:3px solid #111;
     padding:11px 16px;
     background:#ffe45c;
@@ -383,7 +384,12 @@ body{margin:0;padding:28px 0}
     white-space:nowrap;
 }
 
+.unselect-all-reminders-button{
+    background:#ffb3c7;
+}
+
 .select-all-reminders-button:hover,
+.unselect-all-reminders-button:hover,
 .save-selection-button:hover,
 .send-reminders-button:hover,
 .retry-failed-button:hover{
@@ -487,7 +493,8 @@ body{margin:0;padding:28px 0}
 }
 
 .save-selection-button:disabled,
-.send-reminders-button:disabled{
+.send-reminders-button:disabled,
+.unselect-all-reminders-button:disabled{
     opacity:.55;
     cursor:wait;
 }
@@ -658,7 +665,8 @@ body{margin:0;padding:28px 0}
     }
 
     .reminder-actions button,
-    .select-all-reminders-button{
+    .select-all-reminders-button,
+    .unselect-all-reminders-button{
         width:100%;
         min-height:48px;
     }

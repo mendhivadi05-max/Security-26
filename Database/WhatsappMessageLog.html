@@ -18,11 +18,42 @@
                 <p class="eyebrow">Database Records</p>
                 <h1>WhatsApp Message Log</h1>
             </div>
-            <a class="secondary-link" href="Database">Back to Database Records</a>
+            <a class="secondary-link" href="../Home/Home">Back to Dashboard</a>
         </header>
 
         <section class="summary-grid" id="messageSummary">
             <div class="empty-state">Loading WhatsApp message history...</div>
+        </section>
+
+        <section class="statistics-toolbar message-filter-panel">
+            <div class="filter-grid message-filter-grid">
+                <label>
+                    Template
+                    <select id="templateFilter">
+                        <option value="all">All templates</option>
+                    </select>
+                </label>
+                <label>
+                    Type
+                    <select id="typeFilter">
+                        <option value="all">All types</option>
+                    </select>
+                </label>
+                <label>
+                    Person
+                    <select id="personFilter">
+                        <option value="all">All people</option>
+                    </select>
+                </label>
+                <label>
+                    Date
+                    <input type="date" id="dateFilter">
+                </label>
+            </div>
+
+            <div class="filter-actions">
+                <button type="button" class="secondary-btn" id="clearMessageFilters">Clear filters</button>
+            </div>
         </section>
 
         <section class="analytics-panel">

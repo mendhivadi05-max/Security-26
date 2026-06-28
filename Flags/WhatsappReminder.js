@@ -6,6 +6,7 @@ const selectionCount = document.getElementById("selectionCount");
 const meetingTimeInput = document.getElementById("meetingTime");
 const reminderSearchInput = document.getElementById("reminderSearch");
 const selectAllRemindersButton = document.getElementById("selectAllReminders");
+const unselectAllRemindersButton = document.getElementById("unselectAllReminders");
 const saveSelectionButton = document.getElementById("saveReminderSelection");
 const sendRemindersButton = document.getElementById("sendWhatsAppReminders");
 const reminderResult = document.getElementById("reminderResult");
@@ -153,6 +154,37 @@ function selectEveryone() {
     scheduleReminderPreparation({ immediate: true });
     reminderResult.textContent = "Everyone with a WhatsApp number is selected.";
     showSuccess("Everyone with a WhatsApp number is selected.");
+}
+
+async function unselectEveryone() {
+    reminderMembers = reminderMembers.map(member => ({
+        ...member,
+        sendReminder: false
+    }));
+
+    renderReminderMembers();
+    latestPreparation = null;
+    setReadiness("Select members to prepare WhatsApp reminders.");
+    reminderResult.textContent = "Saving cleared reminder selection...";
+    unselectAllRemindersButton.disabled = true;
+    saveSelectionButton.disabled = true;
+    sendRemindersButton.disabled = true;
+
+    try {
+        await saveReminderSelection({ silent: true });
+        reminderResult.textContent = "Everyone is unselected from reminders.";
+        showSuccess("Everyone is unselected from reminders.");
+    }
+    catch (error) {
+        console.error("Reminder unselect error:", error);
+        reminderResult.textContent = "Could not clear the reminder selection.";
+        showErrorToast("Could not clear the reminder selection.");
+    }
+    finally {
+        unselectAllRemindersButton.disabled = false;
+        saveSelectionButton.disabled = false;
+        sendRemindersButton.disabled = false;
+    }
 }
 
 function selectedMembers() {
@@ -405,6 +437,7 @@ meetingTimeInput.addEventListener("input", () => {
 });
 
 selectAllRemindersButton.addEventListener("click", selectEveryone);
+unselectAllRemindersButton.addEventListener("click", unselectEveryone);
 
 saveSelectionButton.addEventListener("click", async () => {
     saveSelectionButton.disabled = true;
