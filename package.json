@@ -4,11 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node server.js",
-    "build": "node scripts/build-static.js && node --check server.js",
+    "build": "node --check server.js && node scripts/build-static.js",
     "check": "node --check server.js"
   },
   "dependencies": {
-    "@vercel/functions": "^3.7.3",
     "firebase-admin": "^14.0.0"
   },
   "engines": {

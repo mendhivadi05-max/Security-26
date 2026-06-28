@@ -162,7 +162,7 @@ async function sendReminders(body, user, response) {
         : await fetchActiveMembers();
     if (members.length > safeguards.maxBatchSize) {
         return response.status(400).json({
-            error: `This would send to ${members.length} members. Select up to ${safeguards.maxBatchSize} recipients per batch.`
+            error: `This would send to ${members.length} members. Select up to ${safeguards.maxBatchSize} recipients at once.`
         });
     }
 

@@ -27,7 +27,7 @@
                 <input
                     type="search"
                     id="statisticsSearch"
-                    placeholder="Search a meeting, batch, gender, or year">
+                    placeholder="Search a meeting, branch, gender, or year">
             </label>
 
             <div class="filter-grid">
@@ -35,12 +35,6 @@
                     Meeting
                     <select id="meetingFilter">
                         <option value="all">All meetings</option>
-                    </select>
-                </label>
-                <label>
-                    Batch
-                    <select id="batchFilter">
-                        <option value="all">All batches</option>
                     </select>
                 </label>
                 <label>
@@ -74,7 +68,7 @@
             <article class="analytics-panel">
                 <h2>Attendance Breakdown</h2>
                 <div class="breakdown-tabs" id="breakdownTabs">
-                    <button type="button" class="is-active" data-group="batch">Batch</button>
+                    <button type="button" class="is-active" data-group="branch">Branch</button>
                     <button type="button" data-group="gender">Gender</button>
                     <button type="button" data-group="year">Year</button>
                 </div>

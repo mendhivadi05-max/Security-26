@@ -247,7 +247,7 @@ function renderTaskList(){
                 <li class="task-item birthday-item">
                     <span>
                         <strong>${escapeHomeHtml(person.name)}'s birthday</strong>
-                        <small>${escapeHomeHtml(person.branch || person.course)} - ${escapeHomeHtml(person.batch)}</small>
+                        <small>${escapeHomeHtml(person.branch || person.course)}</small>
                     </span>
                 </li>
             `;

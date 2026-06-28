@@ -120,14 +120,10 @@ function getMatches(term) {
             const branch =
                 normalize(volunteer.branch || volunteer.course);
 
-            const batch =
-                normalize(volunteer.batch);
-
             return (
                 name.startsWith(query) ||
                 name.includes(query) ||
-                branch.includes(query) ||
-                batch.includes(query)
+                branch.includes(query)
             );
         })
         .slice(0, 10);
@@ -152,7 +148,7 @@ function renderResults(matches) {
                     ${avatarMarkup(volunteer)}
                     <span>
                         <strong>${escapeHtml(volunteer.name || "Unnamed")}</strong>
-                        <small>${escapeHtml(volunteer.branch || volunteer.course || "No branch")} - ${escapeHtml(volunteer.batch || "No batch")}</small>
+                        <small>${escapeHtml(volunteer.branch || volunteer.course || "No branch")}</small>
                     </span>
                     ${notesByMember[volunteer.id]?.length ? '<span class="alert-mark">!</span>' : ""}
                 </button>
@@ -285,7 +281,6 @@ function renderVolunteer(volunteer) {
                         <div><dt>Date of Birth</dt><dd>${escapeHtml(volunteer.dateOfBirth || "Not provided")}</dd></div>
                         <div><dt>Gender</dt><dd>${escapeHtml(volunteer.gender || "Not provided")}</dd></div>
                         <div><dt>Branch</dt><dd>${escapeHtml(volunteer.branch || volunteer.course || "Not provided")}</dd></div>
-                        <div><dt>Batch</dt><dd>${escapeHtml(volunteer.batch || "Not provided")}</dd></div>
                     </dl>
                 </div>
             </div>
@@ -411,14 +406,6 @@ function ensureEditVolunteerDialog() {
                         </select>
                     </label>
                     <label id="editCustomBranchLabel" hidden>Branch name<input type="text" id="editCustomBranch" maxlength="80" placeholder="Enter branch name"></label>
-                    <label>Batch
-                        <select id="editVolunteerBatch" required>
-                            <option value="">Select batch</option>
-                            <option>2024</option>
-                            <option>2025</option>
-                            <option>2026</option>
-                        </select>
-                    </label>
                 </div>
                 <label>WhatsApp Number<input type="tel" id="editVolunteerWhatsapp" inputmode="tel" required></label>
                 <label>Volunteer Image<input type="file" id="editVolunteerImage" accept="image/*"></label>
@@ -453,7 +440,6 @@ function openEditVolunteerDialog(volunteer) {
     document.getElementById("editVolunteerCourse").innerHTML = branchOptionsMarkup(branchName(volunteer));
     document.getElementById("editCustomBranch").value = "";
     updateEditCustomBranchVisibility();
-    document.getElementById("editVolunteerBatch").value = volunteer.batch || "";
     document.getElementById("editVolunteerWhatsapp").value = volunteer.whatsappNumber || volunteer.phone || "";
     document.getElementById("editVolunteerImage").value = "";
     editedVolunteerImage = volunteer.image || "";
@@ -505,13 +491,12 @@ async function saveVolunteerDetails(event) {
     const dateOfBirth = document.getElementById("editVolunteerDob").value;
     const gender = document.getElementById("editVolunteerGender").value;
     const branch = selectedEditBranch();
-    const batch = document.getElementById("editVolunteerBatch").value;
     const whatsappNumber = document.getElementById("editVolunteerWhatsapp").value.trim();
     const updatedAt = Date.now();
     const volunteer = volunteers.find(item => item.id === selectedVolunteerId);
     const createdAt = volunteer.createdAt || volunteer.metadata?.createdAt || updatedAt;
 
-    if (!name || !dateOfBirth || !gender || !branch || !batch || !whatsappNumber) {
+    if (!name || !dateOfBirth || !gender || !branch || !whatsappNumber) {
         alert("Please fill all required volunteer details.");
         return;
     }
@@ -522,11 +507,10 @@ async function saveVolunteerDetails(event) {
         gender,
         course: branch,
         branch,
-        batch,
         whatsappNumber,
         image: editedVolunteerImage,
         updatedAt,
-        profile: { name, dateOfBirth, gender, course: branch, branch, batch, image: editedVolunteerImage },
+        profile: { name, dateOfBirth, gender, course: branch, branch, image: editedVolunteerImage },
         contact: { whatsappNumber },
         metadata: { createdAt, updatedAt, schemaVersion: 2 }
     };

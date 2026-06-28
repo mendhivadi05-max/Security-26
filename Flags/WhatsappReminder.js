@@ -38,7 +38,7 @@ async function loadSafeguards() {
         const result = await apiGet("/api/whatsapp?action=safeguards");
         const safeguards = result.safeguards || {};
         safeguardsPanel.innerHTML = `
-            <span>Batch limit: <strong>${escapeHtml(safeguards.maxBatchSize)}</strong></span>
+            <span>Recipient limit: <strong>${escapeHtml(safeguards.maxBatchSize)}</strong></span>
             <span>Daily cap: <strong>${escapeHtml(safeguards.dailySendLimit)}</strong></span>
             <span>Cooldown: <strong>${escapeHtml(safeguards.memberCooldownMinutes)} min</strong></span>
         `;

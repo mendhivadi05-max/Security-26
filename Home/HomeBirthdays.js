@@ -31,8 +31,7 @@ async function loadVolunteerBirthdays() {
             id: memberDoc.id,
             name: member.name || "Unnamed volunteer",
             branch: member.branch || member.course || "No branch",
-            course: member.branch || member.course || "No branch",
-            batch: member.batch || "No batch"
+            course: member.branch || member.course || "No branch"
         });
     });
 

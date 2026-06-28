@@ -19,12 +19,6 @@ const WRITABLE_COLLECTIONS = new Set([
     "memberNotes"
 ]);
 
-const VALID_BATCHES = new Set([
-    "2024",
-    "2025",
-    "2026"
-]);
-
 function cleanId(value) {
     const id = String(value || "").trim();
     if (!id || id.includes("/") || id.includes("..")) {
@@ -85,7 +79,6 @@ async function readCollection(db, collectionName, request) {
                 name: data.name || data.profile?.name || "Unnamed volunteer",
                 branch: data.branch || data.profile?.branch || data.course || data.profile?.course || "No branch",
                 course: data.branch || data.profile?.branch || data.course || data.profile?.course || "No branch",
-                batch: data.batch || data.profile?.batch || "No batch",
                 dateOfBirth: data.dateOfBirth || data.profile?.dateOfBirth || ""
             };
         });
@@ -117,13 +110,12 @@ function memberPayload(input, existing = {}) {
     const dateOfBirth = cleanString(input.dateOfBirth, 20);
     const gender = cleanString(input.gender, 40);
     const branch = cleanString(input.branch || input.course, 120);
-    const batch = cleanString(input.batch, 80);
     const whatsappNumber = cleanString(input.whatsappNumber, 40);
     const image = cleanImage(input.image);
     const now = Date.now();
     const createdAt = timestampValue(existing.createdAt || existing.metadata?.createdAt || input.createdAt || now);
 
-    if (!name || !dateOfBirth || !gender || !branch || !batch || !whatsappNumber) {
+    if (!name || !dateOfBirth || !gender || !branch || !whatsappNumber) {
         const error = new Error("All required volunteer fields must be filled.");
         error.statusCode = 400;
         throw error;
@@ -141,19 +133,12 @@ function memberPayload(input, existing = {}) {
         throw error;
     }
 
-    if (!VALID_BATCHES.has(batch)) {
-        const error = new Error("Choose a valid batch.");
-        error.statusCode = 400;
-        throw error;
-    }
-
     return {
         name,
         dateOfBirth,
         gender,
         course: branch,
         branch,
-        batch,
         whatsappNumber,
         image,
         active: input.active !== false,
@@ -161,7 +146,7 @@ function memberPayload(input, existing = {}) {
         phone: whatsappNumber,
         updatedAt: now,
         createdAt,
-        profile: { name, dateOfBirth, gender, course: branch, branch, batch, image },
+        profile: { name, dateOfBirth, gender, course: branch, branch, image },
         contact: { whatsappNumber },
         metadata: {
             createdAt,

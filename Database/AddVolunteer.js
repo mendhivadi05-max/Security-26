@@ -157,13 +157,10 @@ form.addEventListener("submit", async (event) => {
     const branch =
         selectedBranch();
 
-    const batch =
-        document.getElementById("volunteerBatch").value;
-
     const whatsappNumber =
         document.getElementById("volunteerWhatsapp").value.trim();
 
-    if (!name || !dateOfBirth || !branch || !gender || !batch || !whatsappNumber) {
+    if (!name || !dateOfBirth || !branch || !gender || !whatsappNumber) {
         showErrorToast("Please fill all required volunteer details.");
         return;
     }
@@ -177,7 +174,6 @@ form.addEventListener("submit", async (event) => {
                 gender,
                 course: branch,
                 branch,
-                batch,
                 whatsappNumber,
                 image: selectedImage
             }

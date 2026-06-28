@@ -1,37 +1,37 @@
-# ClubDesk
+# Security'26
 
-Static ClubDesk frontend with local Node authentication endpoints,
-Firebase/Firestore, and backend WhatsApp Cloud API automation. It helps club
-owners and event hosts collaborate with team members, manage volunteers, record
-attendance, and send approved WhatsApp templates without exposing Meta secrets
-to the browser.
+Security'26 is a club operations desk for volunteer management, attendance,
+meeting records, flags, activity logs, and WhatsApp communication. It gives a
+small team one place to run daily admin work without sharing private Firebase or
+Meta credentials in the browser.
 
-## WhatsApp Automation
+## What This Project Has Accomplished
 
-All WhatsApp sends happen through `/api` routes. The frontend never receives the
-Meta access token, phone number ID, webhook verification token, Firebase Admin
-private key, or other sensitive credentials.
+From a sales point of view, Security'26 turns scattered club work into a clear
+product: teams can add volunteers, record attendance, spot absence patterns, and
+send approved WhatsApp reminders from one dashboard. That creates a practical
+demo for any organization that needs safer member management and faster
+follow-up.
 
-- Meeting reminders: View Flags has the reminder panel. Select members, enter a
-  meeting time, and click **Send WhatsApp Reminders**. The route
-  `/api/whatsapp/send-reminders` sends the approved meeting reminder template.
-- Absent notices: Attendance is saved through `/api/attendance/save`. The first
-  save for a session identifies absent members and sends the approved absent
-  template. Later saves update attendance but skip WhatsApp notices.
-- Flagged member review: Each flagged student card has its own
-  **Send WhatsApp review** action. It calls `/api/whatsapp/send-targeted` for
-  that one member using the approved absence review template.
-- Webhooks: Meta verification and incoming events are handled by
-  `/api/whatsapp/webhook`. Incoming messages are stored in
-  `whatsappIncomingMessages` for future replies, confirmations, acknowledgements,
-  AI responses, or workflow automation.
+From a business point of view, it reduces manual tracking, centralizes records,
+and protects sensitive setup values behind backend API routes. The project also
+adds audit-friendly admin activity logs, structured Firestore storage, and
+deployment-ready Vercel configuration so the app can move from local use to a
+public cloud workflow.
 
-The template variable order is configured in `api/_whatsappTemplates.js` and
-must match the approved Meta templates:
+In plain English, this app helps a club know who its volunteers are, who came to
+meetings, who needs attention, and who should receive a message. Instead of
+updating many lists by hand, the team can open the dashboard and manage the work
+in a simpler, more organized way.
 
-- `meetingReminder`: `name`, `meeting_time`
-- `absentNotice`: `name`, `meeting_name`, `date`, `time`
-- `absenceReview`: `name`, `meeting_name`
+## Core Features
+
+- Volunteer records with add, edit, search, delete, images, notes, and flags.
+- Attendance sessions with present and absent tracking.
+- Statistics by meeting, branch, gender, and year.
+- WhatsApp reminder, absence notice, and targeted review routes.
+- Firebase authentication, Firestore storage, and protected admin APIs.
+- Vercel-ready static frontend build with serverless API routes.
 
 ## Local Development
 
@@ -41,20 +41,12 @@ Copy `.env.example` to `.env.local`, fill in the values, and run:
 npm start
 ```
 
-Firebase Email/Password authentication must be enabled, and the Firebase users
-used by this app must already exist. Usernames entered without an `@` are mapped
-to `<username>@gmail.com` by default. Set `LOGIN_EMAIL_DOMAIN` if your Firebase
-users use a different email domain.
-
-The local server disables Turnstile unless `NODE_ENV=production` is set. For
-local WhatsApp testing, keep the values in `.env.local`. Do not commit that file.
-The Firebase Admin private key can use escaped newlines, as shown in
-`.env.example`.
-
-Run the syntax validation with:
+Run validation and rebuild the static frontend with:
 
 ```sh
 npm run build
 ```
 
-The separate `functions/` directory contains Firebase Functions.
+Keep `.env.local` private. The frontend should never receive the Meta access
+token, phone number ID, webhook token, Firebase Admin private key, or other
+server secrets.

@@ -3,7 +3,6 @@ import { loadCollections } from "../Shared/Api.js";
 const elements = {
     search: document.getElementById("statisticsSearch"),
     meeting: document.getElementById("meetingFilter"),
-    batch: document.getElementById("batchFilter"),
     gender: document.getElementById("genderFilter"),
     year: document.getElementById("yearFilter"),
     summary: document.getElementById("summaryGrid"),
@@ -16,7 +15,7 @@ const elements = {
 let members = {};
 let sessions = {};
 let attendanceRows = [];
-let activeGroup = "batch";
+let activeGroup = "branch";
 
 function text(value, fallback = "Unknown") {
     const result =
@@ -35,16 +34,6 @@ function escapeHtml(value) {
 }
 
 function memberYear(member) {
-    const batch =
-        text(member.batch, "");
-
-    const match =
-        batch.match(/\b(19|20)\d{2}\b/);
-
-    if (match) {
-        return match[0];
-    }
-
     const createdAt =
         Number(member.createdAt);
 
@@ -79,7 +68,6 @@ function filteredRows() {
                 row.sessionDate,
                 row.memberName,
                 row.branch,
-                row.batch,
                 row.gender,
                 row.year,
                 row.status
@@ -88,7 +76,6 @@ function filteredRows() {
         return (
             matchesSearch &&
             (elements.meeting.value === "all" || row.sessionId === elements.meeting.value) &&
-            (elements.batch.value === "all" || row.batch === elements.batch.value) &&
             (elements.gender.value === "all" || row.gender === elements.gender.value) &&
             (elements.year.value === "all" || row.year === elements.year.value)
         );
@@ -294,7 +281,6 @@ async function loadData() {
                 memberName: text(member.name),
                 branch: text(member.branch || member.course),
                 course: text(member.branch || member.course),
-                batch: text(member.batch),
                 gender: text(member.gender),
                 year: memberYear(member),
                 status: record.status
@@ -314,7 +300,6 @@ async function loadData() {
             elements.meeting.append(option);
         });
 
-    addOptions(elements.batch, Object.values(members).map(member => text(member.batch)));
     addOptions(elements.gender, Object.values(members).map(member => text(member.gender)));
     addOptions(elements.year, Object.values(members).map(memberYear));
 
@@ -326,7 +311,7 @@ async function loadData() {
             query.toLowerCase();
 
         const groupMatch =
-            ["batch", "gender", "year"]
+            ["branch", "gender", "year"]
                 .find(group => normalizedQuery.includes(group));
 
         if (groupMatch) {
@@ -344,7 +329,7 @@ async function loadData() {
     render();
 }
 
-[elements.search, elements.meeting, elements.batch, elements.gender, elements.year]
+[elements.search, elements.meeting, elements.gender, elements.year]
     .forEach(control => {
         control.addEventListener(control.tagName === "INPUT" ? "input" : "change", render);
     });
