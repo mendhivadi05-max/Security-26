@@ -279,43 +279,6 @@ body{
     color:#fff;
 }
 
-.database-insight-search{
-    border-top:1px solid #e1e7ef;
-    padding-top:14px;
-    display:grid;
-    gap:7px;
-}
-
-.database-insight-search label{
-    font-size:.85em;
-    font-weight:bold;
-    color:#374151;
-}
-
-.database-insight-search > div{
-    display:grid;
-    grid-template-columns:1fr auto;
-    gap:8px;
-}
-
-.database-insight-search input{
-    min-width:0;
-    border:1px solid #cbd5e1;
-    border-radius:6px;
-    padding:10px;
-    font:inherit;
-}
-
-.database-insight-search button{
-    border:0;
-    border-radius:6px;
-    padding:10px 14px;
-    background:#b91c1c;
-    color:#fff;
-    font-weight:700;
-    cursor:pointer;
-}
-
 .attendance-modal label{
     font-size:.85em;
     font-weight:bold;
@@ -448,10 +411,6 @@ body{
         transform:translate(-50%,-50%);
         text-align:center;
         white-space:nowrap;
-    }
-
-    .database-insight-search > div{
-        grid-template-columns:1fr;
     }
 
     .dashboard-container{

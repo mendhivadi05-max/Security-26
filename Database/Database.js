@@ -7,12 +7,6 @@ const openButton =
 const closeButton =
     document.getElementById("closeChoices");
 
-const insightSearchForm =
-    document.getElementById("insightSearchForm");
-
-const insightSearch =
-    document.getElementById("insightSearch");
-
 function openChoices() {
     modal.classList.add("is-visible");
 }
@@ -28,18 +22,4 @@ modal.addEventListener("click", (event) => {
     if (event.target === modal) {
         closeChoices();
     }
-});
-
-insightSearchForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const query =
-        insightSearch.value.trim();
-
-    const target =
-        query
-            ? `BrowseStatistics?q=${encodeURIComponent(query)}`
-            : "BrowseStatistics";
-
-    window.location.href = target;
 });

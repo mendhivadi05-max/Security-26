@@ -9,6 +9,7 @@ const READABLE_COLLECTIONS = new Set([
     "attendance",
     "flags",
     "memberNotes",
+    "whatsappMessages",
     "actionLogs"
 ]);
 
@@ -90,6 +91,15 @@ async function readCollection(db, collectionName, request) {
     }
 
     if (collectionName === "actionLogs") {
+        const limit = boundedLimit(request.query.limit, 250, 1000);
+        const snapshot = await db.collection(collectionName)
+            .orderBy("createdAtMs", "desc")
+            .limit(limit)
+            .get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    if (collectionName === "whatsappMessages") {
         const limit = boundedLimit(request.query.limit, 250, 1000);
         const snapshot = await db.collection(collectionName)
             .orderBy("createdAtMs", "desc")

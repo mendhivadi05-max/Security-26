@@ -56,6 +56,26 @@ const root = __dirname;
 const port = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === "production";
 
+const cleanHtmlRoutes = new Map([
+    ["/Auth/Auth", "/Auth/Auth.html"],
+    ["/Home/Home", "/Home/Home.html"],
+    ["/Attendance/AddAttendance", "/Attendance/AddAttendance.html"],
+    ["/MeetingRecords/MeetingRecords", "/MeetingRecords/MeetingRecords.html"],
+    ["/Database/Database", "/Database/Database.html"],
+    ["/Database/AddVolunteer", "/Database/AddVolunteer.html"],
+    ["/Database/VolunteerRecords", "/Database/VolunteerRecords.html"],
+    ["/Database/VolunteerProfile", "/Database/VolunteerProfile.html"],
+    ["/Database/WhatsappMessageLog", "/Database/WhatsappMessageLog.html"],
+    ["/Database/BrowseStatistics", "/Database/BrowseStatistics.html"],
+    ["/Flags/Flags", "/Flags/Flags.html"],
+    ["/Flags/WhatsappReminder", "/Flags/WhatsappReminder.html"],
+    ["/Legal/Privacy", "/Legal/Privacy.html"],
+    ["/Legal/Terms", "/Legal/Terms.html"],
+    ["/Legal/Cookies", "/Legal/Cookies.html"],
+    ["/Legal/AcceptableUse", "/Legal/AcceptableUse.html"],
+    ["/Admin/ActivityLog", "/Admin/ActivityLog.html"]
+]);
+
 const contentTypes = {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
@@ -260,7 +280,12 @@ async function handleApi(request, response, pathname) {
 
 http.createServer(async (request, response) => {
     const requestUrl = new URL(request.url, `http://${request.headers.host}`);
-    const route = requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname;
+    const pathname = requestUrl.pathname.length > 1
+        ? requestUrl.pathname.replace(/\/$/, "")
+        : requestUrl.pathname;
+    const route = pathname === "/"
+        ? "/index.html"
+        : cleanHtmlRoutes.get(pathname) || pathname;
 
     if (route.startsWith("/api/")) {
         try {

@@ -17,6 +17,8 @@ const CLEAN_HTML_ROUTES = new Map([
     ["/Database/Database", "/Database/Database.html"],
     ["/Database/AddVolunteer", "/Database/AddVolunteer.html"],
     ["/Database/VolunteerRecords", "/Database/VolunteerRecords.html"],
+    ["/Database/VolunteerProfile", "/Database/VolunteerProfile.html"],
+    ["/Database/WhatsappMessageLog", "/Database/WhatsappMessageLog.html"],
     ["/Database/BrowseStatistics", "/Database/BrowseStatistics.html"],
     ["/Flags/Flags", "/Flags/Flags.html"],
     ["/Flags/WhatsappReminder", "/Flags/WhatsappReminder.html"],

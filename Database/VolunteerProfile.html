@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>body { visibility: hidden; }</style>
+    <script type="module" src="../Auth/AuthGuard.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Profile</title>
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Database.css">
+</head>
+
+<body>
+    <main class="page-shell records-shell profile-page-shell">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">Database Records</p>
+                <h1>Volunteer Profile</h1>
+            </div>
+            <a class="secondary-link" href="VolunteerRecords">Back to Volunteer Records</a>
+        </header>
+
+        <section class="record-detail profile-page-detail" id="recordDetail">
+            <div class="empty-state">
+                Loading volunteer record...
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="VolunteerRecords.js"></script>
+    <script type="module" src="../Shared/Preload.js"></script>
+</body>
+
+</html>

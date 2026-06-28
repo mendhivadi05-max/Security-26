@@ -9,6 +9,9 @@ const searchResults =
 const recordDetail =
     document.getElementById("recordDetail");
 
+const isProfilePage =
+    !searchInput;
+
 let volunteers = [];
 let sessionsById = {};
 let attendanceByMember = {};
@@ -130,6 +133,10 @@ function getMatches(term) {
 }
 
 function renderResults(matches) {
+    if (!searchInput || !searchResults) {
+        return;
+    }
+
     if (searchInput.value.trim() === "") {
         searchResults.innerHTML = "";
         return;
@@ -525,7 +532,7 @@ async function saveVolunteerDetails(event) {
         Object.assign(volunteer, updates);
         document.getElementById("editVolunteerDialog").classList.remove("is-visible");
         renderVolunteer(volunteer);
-        renderResults(getMatches(searchInput.value));
+        renderResults(searchInput ? getMatches(searchInput.value) : []);
     }
     catch (error) {
         console.error("Volunteer update error:", error);
@@ -552,7 +559,11 @@ async function deleteVolunteer(volunteer) {
         delete attendanceByMember[volunteer.id];
         selectedVolunteerId = "";
         recordDetail.innerHTML = '<div class="empty-state">Volunteer deleted successfully.</div>';
-        renderResults(getMatches(searchInput.value));
+        if (isProfilePage) {
+            window.location.href = "VolunteerRecords";
+            return;
+        }
+        renderResults(searchInput ? getMatches(searchInput.value) : []);
     }
     catch (error) {
         console.error("Volunteer delete error:", error);
@@ -574,7 +585,7 @@ async function removeProfileFlag() {
             reason: ""
         };
         renderVolunteer(volunteers.find(item => item.id === selectedVolunteerId));
-        renderResults(getMatches(searchInput.value));
+        renderResults(searchInput ? getMatches(searchInput.value) : []);
     }
     catch (error) {
         console.error("Flag removal error:", error);
@@ -637,7 +648,7 @@ async function saveProfileFlag(event) {
 
     document.getElementById("profileFlagDialog").classList.remove("is-visible");
     renderVolunteer(volunteers.find(item => item.id === selectedVolunteerId));
-    renderResults(getMatches(searchInput.value));
+    renderResults(searchInput ? getMatches(searchInput.value) : []);
 }
 
 async function saveNote(event) {
@@ -679,7 +690,7 @@ async function saveNote(event) {
             volunteers.find(item => item.id === selectedVolunteerId);
 
         renderVolunteer(volunteer);
-        renderResults(getMatches(searchInput.value));
+        renderResults(searchInput ? getMatches(searchInput.value) : []);
     }
     catch (error) {
         console.error("Note save error:", error);
@@ -716,7 +727,7 @@ async function deleteNote(event) {
             volunteers.find(item => item.id === selectedVolunteerId);
 
         renderVolunteer(volunteer);
-        renderResults(getMatches(searchInput.value));
+        renderResults(searchInput ? getMatches(searchInput.value) : []);
     }
     catch (error) {
         console.error("Note delete error:", error);
@@ -881,25 +892,23 @@ async function loadRecordData() {
     });
 }
 
-searchInput.addEventListener("input", () => {
-    renderResults(getMatches(searchInput.value));
-});
+if (searchInput && searchResults) {
+    searchInput.addEventListener("input", () => {
+        renderResults(getMatches(searchInput.value));
+    });
 
-searchResults.addEventListener("click", (event) => {
-    const row =
-        event.target.closest(".result-row");
+    searchResults.addEventListener("click", (event) => {
+        const row =
+            event.target.closest(".result-row");
 
-    if (!row) {
-        return;
-    }
+        if (!row) {
+            return;
+        }
 
-    const volunteer =
-        volunteers.find(item => item.id === row.dataset.id);
-
-    if (volunteer) {
-        renderVolunteer(volunteer);
-    }
-});
+        window.location.href =
+            `VolunteerProfile?member=${encodeURIComponent(row.dataset.id)}`;
+    });
+}
 
 async function initializePage() {
     try {
@@ -908,15 +917,30 @@ async function initializePage() {
         const requestedMemberId =
             new URLSearchParams(window.location.search).get("member");
 
+        if (requestedMemberId && !isProfilePage) {
+            window.location.replace(
+                `VolunteerProfile?member=${encodeURIComponent(requestedMemberId)}`
+            );
+            return;
+        }
+
         if (requestedMemberId) {
             const volunteer =
                 volunteers.find(item => item.id === requestedMemberId);
 
             if (volunteer) {
-                searchInput.value = volunteer.name || "";
-                renderResults(getMatches(searchInput.value));
                 renderVolunteer(volunteer);
+                return;
             }
+
+            recordDetail.innerHTML =
+                '<div class="empty-state">Volunteer record not found.</div>';
+            return;
+        }
+
+        if (isProfilePage) {
+            recordDetail.innerHTML =
+                '<div class="empty-state">Choose a volunteer from the records page.</div>';
         }
     }
     catch (error) {

@@ -298,6 +298,46 @@ async function storeIncomingMessage(message, metadata, value) {
     });
 }
 
+async function storeStatusUpdate(status) {
+    const messageId = status.id || "";
+    if (!messageId) {
+        return;
+    }
+
+    const snapshot = await firestore()
+        .collection("whatsappMessages")
+        .where("messageId", "==", messageId)
+        .limit(1)
+        .get();
+
+    const error = status.errors?.[0] || {};
+    const updates = {
+        status: status.status || "unknown",
+        statusUpdatedAtMs: Date.now(),
+        statusTimestamp: status.timestamp || "",
+        conversationId: status.conversation?.id || "",
+        pricingCategory: status.pricing?.category || "",
+        deliveryErrorCode: error.code || "",
+        deliveryErrorTitle: error.title || "",
+        deliveryErrorMessage: error.message || error.error_data?.details || "",
+        deliveryErrorDetails: error.error_data?.details || "",
+        updatedAt: FieldValue.serverTimestamp()
+    };
+
+    if (snapshot.empty) {
+        await firestore().collection("whatsappMessages").add({
+            ...updates,
+            direction: "outgoing",
+            messageId,
+            createdAtMs: Date.now(),
+            createdAt: FieldValue.serverTimestamp()
+        });
+        return;
+    }
+
+    await snapshot.docs[0].ref.set(updates, { merge: true });
+}
+
 async function handleWebhookEvent(body) {
     const entries = Array.isArray(body.entry) ? body.entry : [];
 
@@ -306,6 +346,7 @@ async function handleWebhookEvent(body) {
         for (const change of changes) {
             const value = change.value || {};
             const messages = Array.isArray(value.messages) ? value.messages : [];
+            const statuses = Array.isArray(value.statuses) ? value.statuses : [];
 
             for (const message of messages) {
                 try {
@@ -313,6 +354,15 @@ async function handleWebhookEvent(body) {
                 }
                 catch (error) {
                     console.error("Incoming WhatsApp message storage failed:", error);
+                }
+            }
+
+            for (const status of statuses) {
+                try {
+                    await storeStatusUpdate(status);
+                }
+                catch (error) {
+                    console.error("WhatsApp status storage failed:", error);
                 }
             }
         }
