@@ -66,6 +66,7 @@ const cleanHtmlRoutes = new Map([
     ["/Database/VolunteerRecords", "/Database/VolunteerRecords.html"],
     ["/Database/VolunteerProfile", "/Database/VolunteerProfile.html"],
     ["/Database/WhatsappMessageLog", "/Database/WhatsappMessageLog.html"],
+    ["/Database/WhatsappFailures", "/Database/WhatsappFailures.html"],
     ["/Database/BrowseStatistics", "/Database/BrowseStatistics.html"],
     ["/Flags/Flags", "/Flags/Flags.html"],
     ["/Flags/WhatsappReminder", "/Flags/WhatsappReminder.html"],

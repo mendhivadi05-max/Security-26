@@ -408,6 +408,22 @@ async function mutate(request, response) {
         return response.status(200).json({ saved: true });
     }
 
+    if (action === "markWhatsAppFailureChecked") {
+        const messageId = cleanId(body.messageId);
+        if (!messageId) {
+            return response.status(400).json({ error: "Message id is required." });
+        }
+
+        await db.collection("whatsappMessages").doc(messageId).set({
+            failureChecked: true,
+            failureCheckedAtMs: Date.now(),
+            failureCheckedBy: user.email || user.uid || "admin",
+            updatedAt: FieldValue.serverTimestamp()
+        }, { merge: true });
+        await logAction({ user, action: "whatsapp_failure_checked", details: { messageId } });
+        return response.status(200).json({ saved: true });
+    }
+
     return response.status(400).json({ error: "Choose a valid data action." });
 }
 

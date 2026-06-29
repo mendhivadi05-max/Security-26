@@ -19,8 +19,12 @@ const imageInput =
 const imagePreview =
     document.getElementById("imagePreview");
 
+const duplicateWarning =
+    document.getElementById("duplicateWarning");
+
 let selectedImage = "";
 let knownBranches = [];
+let existingMembers = [];
 
 const DEFAULT_BRANCHES = ["B-Tech", "B-com", "BSc"];
 const OTHER_BRANCH_VALUE = "__other";
@@ -29,6 +33,103 @@ function branchNameFromMember(member) {
     return (member.branch || member.course || member.profile?.branch || member.profile?.course || "")
         .toString()
         .trim();
+}
+
+function normalizeName(value) {
+    return String(value || "")
+        .toLowerCase()
+        .replace(/[^\da-z\s]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function normalizePhone(value) {
+    const digits =
+        String(value || "").replace(/[^\d]/g, "");
+
+    return digits.length > 10
+        ? digits.slice(-10)
+        : digits;
+}
+
+function memberPhone(member) {
+    return member.contact?.whatsappNumber || member.whatsappNumber || member.phone || "";
+}
+
+function findPotentialDuplicates(name, whatsappNumber) {
+    const normalizedName =
+        normalizeName(name);
+
+    const normalizedPhone =
+        normalizePhone(whatsappNumber);
+
+    if (!normalizedName && !normalizedPhone) {
+        return [];
+    }
+
+    return existingMembers
+        .map(member => {
+            const candidateName =
+                normalizeName(member.name || member.profile?.name);
+
+            const candidatePhone =
+                normalizePhone(memberPhone(member));
+
+            const samePhone =
+                normalizedPhone && candidatePhone && normalizedPhone === candidatePhone;
+
+            const sameName =
+                normalizedName && candidateName && normalizedName === candidateName;
+
+            const similarName =
+                normalizedName.length >= 5 &&
+                candidateName.length >= 5 &&
+                (candidateName.includes(normalizedName) || normalizedName.includes(candidateName));
+
+            return {
+                member,
+                reason: samePhone
+                    ? "same WhatsApp number"
+                    : sameName
+                        ? "same name"
+                        : similarName
+                            ? "similar name"
+                            : ""
+            };
+        })
+        .filter(match => match.reason)
+        .slice(0, 3);
+}
+
+function renderDuplicateWarning() {
+    const name =
+        document.getElementById("volunteerName").value.trim();
+
+    const whatsappNumber =
+        document.getElementById("volunteerWhatsapp").value.trim();
+
+    const matches =
+        findPotentialDuplicates(name, whatsappNumber);
+
+    if (!matches.length) {
+        duplicateWarning.hidden = true;
+        duplicateWarning.innerHTML = "";
+        return;
+    }
+
+    duplicateWarning.hidden = false;
+    duplicateWarning.innerHTML = `
+        <strong>Possible duplicate volunteer</strong>
+        <span>Check before saving:</span>
+        <ul>
+            ${matches.map(({ member, reason }) => `
+                <li>
+                    ${escapeHtml(member.name || member.profile?.name || "Unnamed")}
+                    <small>${escapeHtml(reason)}${memberPhone(member) ? ` - ${escapeHtml(memberPhone(member))}` : ""}</small>
+                </li>
+            `).join("")}
+        </ul>
+    `;
 }
 
 function escapeHtml(value) {
@@ -77,7 +178,9 @@ function updateCustomBranchVisibility() {
 async function loadBranchOptions() {
     try {
         const data = await loadCollections(["members"]);
-        setBranchOptions((data.members || []).map(branchNameFromMember));
+        existingMembers = data.members || [];
+        setBranchOptions(existingMembers.map(branchNameFromMember));
+        renderDuplicateWarning();
     }
     catch (error) {
         console.error("Branch option load error:", error);
@@ -141,6 +244,10 @@ form.addEventListener("reset", () => {
 });
 
 branchSelect.addEventListener("change", updateCustomBranchVisibility);
+
+["volunteerName", "volunteerWhatsapp"].forEach(id => {
+    document.getElementById(id).addEventListener("input", renderDuplicateWarning);
+});
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();

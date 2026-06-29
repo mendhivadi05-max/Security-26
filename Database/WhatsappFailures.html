@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>body { visibility: hidden; }</style>
+    <script type="module" src="../Auth/AuthGuard.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Delivery Failures</title>
+    <link rel="stylesheet" href="../Shared/Theme.css">
+    <link rel="stylesheet" href="Database.css">
+</head>
+
+<body>
+    <main class="page-shell statistics-shell">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">Database Records</p>
+                <h1>Delivery Failures</h1>
+            </div>
+            <a class="secondary-link" href="../Home/Home">Back to Dashboard</a>
+        </header>
+
+        <section class="summary-grid" id="failureSummary">
+            <div class="empty-state">Loading delivery failures...</div>
+        </section>
+
+        <section class="analytics-panel">
+            <div class="panel-heading">
+                <h2>Failed WhatsApp Messages</h2>
+                <span id="failureCount"></span>
+            </div>
+            <div class="message-log-list" id="failureList"></div>
+        </section>
+    </main>
+
+    <script type="module" src="WhatsappFailures.js"></script>
+    <script type="module" src="../Shared/Preload.js"></script>
+</body>
+
+</html>
