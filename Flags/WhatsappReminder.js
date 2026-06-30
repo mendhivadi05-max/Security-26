@@ -324,7 +324,7 @@ function openSendConfirmation(memberIds) {
 
     pendingSendMemberIds = memberIds;
     sendConfirmSummary.textContent =
-        `${prepared} recipient${prepared === 1 ? "" : "s"} prepared for club_meeting_reminder at ${meetingTime}.`;
+        `${prepared} recipient${prepared === 1 ? "" : "s"} prepared for security_reminder at ${meetingTime}.`;
     sendConfirmRecipients.innerHTML = recipients.map(member => `
         <div class="confirm-recipient-row">
             <strong>${escapeHtml(member.name || "Unnamed")}</strong>

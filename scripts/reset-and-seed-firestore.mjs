@@ -145,7 +145,7 @@ for (let index = 0; index < 10; index += 1) {
     locked: { booleanValue: index < 9 },
     createdAt: { integerValue: String(createdAt) },
     reminderChannel: { stringValue: "whatsapp" },
-    reminderTemplate: { stringValue: "club_meeting_reminder" },
+    reminderTemplate: { stringValue: "security_reminder" },
   });
 
   const recordFields = {};

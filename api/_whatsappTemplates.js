@@ -1,7 +1,7 @@
 const TEMPLATE_CONFIG = {
     meetingReminder: {
         envName: "WHATSAPP_TEMPLATE_MEETING_REMINDER",
-        defaultName: "club_meeting_reminder",
+        defaultName: "security_reminder",
         variables: ["name", "meeting_time"]
     },
     absentNotice: {

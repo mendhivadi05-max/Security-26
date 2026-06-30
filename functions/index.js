@@ -18,7 +18,7 @@ const db = getFirestore();
 const whatsappToken = defineSecret("WHATSAPP_TOKEN");
 const phoneNumberId = defineSecret("PHONE_NUMBER_ID");
 
-const TEMPLATE_NAME = "club_meeting_reminder";
+const TEMPLATE_NAME = "security_reminder";
 const TEMPLATE_LANGUAGE = "en";
 const scrypt = promisify(scryptCallback);
 const CAPTCHA_LIFETIME_MS = 5 * 60 * 1000;
